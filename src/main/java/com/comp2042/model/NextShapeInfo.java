@@ -11,7 +11,7 @@ public final class NextShapeInfo {
     }
 
     public int[][] getShape() {
-        return MatrixOperations.copy(shape);
+        return MatrixUtils.copy(shape);
     }
 
     public int getPosition() {

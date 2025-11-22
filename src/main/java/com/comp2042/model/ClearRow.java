@@ -17,7 +17,7 @@ public final class ClearRow {
     }
 
     public int[][] getNewMatrix() {
-        return MatrixOperations.copy(newMatrix);
+        return MatrixUtils.copy(newMatrix);
     }
 
     public int getScoreBonus() {

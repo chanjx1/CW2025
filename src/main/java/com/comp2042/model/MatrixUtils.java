@@ -6,11 +6,11 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MatrixOperations {
+public class MatrixUtils {
 
 
     //We don't want to instantiate this utility class
-    private MatrixOperations(){
+    private MatrixUtils(){
 
     }
 
@@ -93,7 +93,7 @@ public class MatrixOperations {
     }
 
     public static List<int[][]> deepCopyList(List<int[][]> list){
-        return list.stream().map(MatrixOperations::copy).collect(Collectors.toList());
+        return list.stream().map(MatrixUtils::copy).collect(Collectors.toList());
     }
 
 }

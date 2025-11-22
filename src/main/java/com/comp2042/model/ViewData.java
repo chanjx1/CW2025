@@ -15,7 +15,7 @@ public final class ViewData {
     }
 
     public int[][] getBrickData() {
-        return MatrixOperations.copy(brickData);
+        return MatrixUtils.copy(brickData);
     }
 
     public int getxPosition() {
@@ -27,6 +27,6 @@ public final class ViewData {
     }
 
     public int[][] getNextBrickData() {
-        return MatrixOperations.copy(nextBrickData);
+        return MatrixUtils.copy(nextBrickData);
     }
 }
