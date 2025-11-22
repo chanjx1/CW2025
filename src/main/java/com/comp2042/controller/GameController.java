@@ -1,4 +1,9 @@
-package com.comp2042;
+package com.comp2042.controller;
+
+import com.comp2042.controller.event.EventSource;
+import com.comp2042.view.GuiController;
+import com.comp2042.controller.event.MoveEvent;
+import com.comp2042.model.*;
 
 public class GameController implements InputEventListener {
 
