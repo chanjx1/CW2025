@@ -1,26 +1,36 @@
-<?import com.comp2042.view.GameOverPanel?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.text.Text?>
 <?import java.net.URL?>
-<Pane fx:controller="com.comp2042.view.GuiController"
-      xmlns:fx="http://javafx.com/fxml">
-    <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
-    <BorderPane styleClass="gameBoard" fx:id="gameBoard">
-        <center>
-            <GridPane fx:id="gamePanel" hgap="1" vgap="1" layoutY="30" layoutX="40"/>
-        </center>
-    </BorderPane>
+<?import com.comp2042.view.GameOverPanel?>
 
-    <Group fx:id="groupNotification" layoutX="14" layoutY="203">
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.comp2042.view.GuiController">
+
+    <!-- Dim full-window background grid -->
+    <GridPane fx:id="brickPanel" hgap="1" vgap="1" />
+
+    <!-- Main game frame, centered -->
+    <StackPane alignment="CENTER"
+               maxWidth="150" maxHeight="400"
+               prefWidth="150" prefHeight="400"
+               styleClass="gameBoard">
+
+        <!-- Background board cells -->
+        <GridPane fx:id="gamePanel" hgap="0" vgap="1" />
+
+        <!-- Overlay where the active falling brick rectangles are drawn -->
+        <Pane fx:id="brickOverlay" pickOnBounds="false" />
+    </StackPane>
+
+    <!-- Notifications & game over banner -->
+    <Group fx:id="groupNotification">
         <VBox alignment="CENTER">
-            <GameOverPanel fx:id="gameOverPanel"/>
+            <GameOverPanel fx:id="gameOverPanel" />
         </VBox>
     </Group>
+
     <stylesheets>
         <URL value="@window_style.css"/>
     </stylesheets>
-</Pane>
+</StackPane>
