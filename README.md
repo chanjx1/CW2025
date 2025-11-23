@@ -6,20 +6,58 @@ https://github.com/chanxj1/CW2025
 ## Compilation Instructions
 1. Ensure Java JDK (version 21 or later) and Maven are installed.
 2. Clone the repository.
-3. Run `mvn clean compile` to clear any cached files and compile successfully.
+3. Run `mvn clean compile`
 4. Start the game with `mvn javafx:run`
 
+## Refactoring Summary (What Was Improved)
+This project underwent extensive refactoring and cleanup to improve readability, maintainability, and program structure.
+All Refactoring work is fully functional and tested.
+#### Meaningful Package Organisation
+- Split project into clear model, view, controller, and model.bricks packages.
+- Renamed confusing classes (`SimpleBoard` -> `TetrisBoard`, `MatrixOperations` -> `MatrixUtils`) to match purpose.
+#### Basic Maintenance & Code Cleanup
+- Removed unused imports and dead code.
+- Extracted constants (`BOARD_HEIGHT`, `BOARD_WIDTH`, `HIDDEN_ROWS`, `SPAWN_X`, `SPAWN_Y`) to eliminate magic numbers.
+- Fixed layout bugs in `FXML` and tidied styling via CSS.
+- Cleaned old FXML and unused UI nodes.
+#### Supporting Single Responsibility
+- GUI no longer handles logic such as clear-row score or merging.
+- `GameController` now contains gameplay logic.
+- `GuiController` handles UI rendering, keyboard input, and animations.
+- Created `AbstractBrick` to remove duplicated code from all brick classes.
+#### Design Patterns Used
+##### Strategy Pattern
+- `BrickGenerator` and `RandomBrickGenerator` implement interchangeable generation strategies.
+##### Template / Abstract Base Pattern
+`AbstractBrick` provides shared behaviour; child classes (TBrick, ZBrick…) only define rotation data.
+##### Observer Pattern (via JavaFX properties)
+Score uses `scoreProperty()` to allow reactive GUI updates.
+#### Meaningful JUnit Tests
+Added tests under `src/test/java/com/comp2042/model/`:
+- **ScoreTest.java** - verifies score increment and reset.
+- **MatrixUtilsTest.java** - verifies row-clearing logic and quadratic bonus scoring.
+- **TetrisBoardTest.java** - validates correct spawn position & absence of immediate collision.
+All tests pass using JUnit 5 and Maven Surefire Plugin.
+#### Bug Fixes
+- Fixed broken board centering in FXML.
+- Fixed incorrect spawning position (bricks dropping from middle).
+- Fixed GUI handling of clear-row events.
+- Cleaned event-handling duplication.
+- Improved keyboard responsiveness.
+
 ## Implemented and Working Properly
-1. Complete Package Restructuring (Model-View-Controller)
-2. Centered and Fixed Game Layout (FXML improvements)
-3. Removed Massive Duplication in Brick Classes
-4. Cleaned up GUI Code (Styling & Focus Handling)
-5. Centralised Key Handling
-6. Controller-View Separation Improved (Clear-row logic moved)
+1. Complete refactoring to MVC
+2. Centered and fixed game board layout
+3. Removed duplication across all tetromino classes
+4. Unified block styling and rendering 
+5. Centralised input handling (cleaner key events)
+6. Improved controller/view separation 
+7. Fixed piece spawning, score update, and clear-row event flow
 
 ## Implemented but Not Working Properly
 * None
-All intended refactoring features were tested and are functioning correctly
+
+All intended refactoring features were tested and are functioning correctly.
 
 ## Features Not Implemented
 The following optional extension features were not added (yet):
@@ -30,42 +68,36 @@ The following optional extension features were not added (yet):
 - High score saving
 - Power-ups or adaptive difficulty
 
-## New Java Classes
+## New Java Classes Introduced
 #### AbstractBrick.java
-- Base class for all tetromino bricks
-- Stores rotations
-- Provides defensive deep-copy
+- Stores rotation states
+- Provides deep-copy safety
 - Removes boilerplate from all bricks
 
 ## Modified Java Classes
 #### GuiController.java
-- Added `handleKeyPressed` method for centralised key input
-- Added `showScoreBonus` to separate visuals from logic
-- Removed clear-row logic from `moveDown`
-- Added unified block styling via `styleBlock`
-- Updated overlay initialisation
-- Simplified FXML integrations
+- Centralised key handling
+- Extracted styling logic (`styleBlock`)
+- Added `showScoreBonus` for better MVC separation
+- Cleaned overlay creation & focus management
 #### GameController.java
-- Added `handleClearRow` to move game logic out of the GUI
-- Updated `onDownEvent` to return `DownData` after processing
-- Improved MVC separation
-- Maintains score, merging, and piece creation
+- Added `handleClearRow`
+- Moved logic out of GUI (true MVC separation)
+- Handles score, merging, and new brick creation
 #### gameLayout.fxml
-- Redesigned layout using `StackPane`
-- Ensures the game board is centered
-- Introduced overlay panes for clean rendering
-- Removed unused imports and unnecessary nodes
-#### TetrisBoard.java (formerly SimpleBoard)
-- Renamed for clarity
-- Updated references to match model package
-- Continues to handle all board operations cleanly
-#### MatrixUtils.java (formerly MatrixOperations)
-- Renamed for clearer intent
-- Central place for deep-copy operations
-#### All Brick Classes (IBrick, TBrick, etc.)
+- Rebuilt using `StackPane` overlay structure
+- Centered the board
+- Removed unused imports & redundant nodes
+#### TetrisBoard.java
+- Renamed from `SimpleBoard`
+- Added board constants & spawn constants
+- Manages board state, movement, collision, and new bricks
+#### MatrixUtils.java
+- Renamed from `MatrixOperations`
+- Helper for deep-copy and row-clearing logic
+#### Brick Classes (TBrick, LBrick, etc.)
 - Now extend `AbstractBrick`
 - Contain only rotation data
-- Significant reduction in duplicate code
 
 ## Unexpected Problems
 #### Duplicate compiled classes caused runtime errors
