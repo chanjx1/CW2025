@@ -215,12 +215,9 @@ public class GuiController implements Initializable {
     private void moveDown(MoveEvent event) {
         if (!isPause.get()) {
             DownData downData = eventListener.onDownEvent(event);
-            if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
-                NotificationPanel notificationPanel =
-                        new NotificationPanel("+" + downData.getClearRow().getScoreBonus());
-                groupNotification.getChildren().add(notificationPanel);
-                notificationPanel.showScore(groupNotification.getChildren());
-            }
+
+            // Controller now handles whether to show score bonus.
+            // View only updates brick position.
             refreshBrick(downData.getViewData());
         }
         gamePanel.requestFocus();
@@ -254,5 +251,11 @@ public class GuiController implements Initializable {
     public void pauseGame(ActionEvent actionEvent) {
         gamePanel.requestFocus();
         // could toggle isPause here if you want a real pause button
+    }
+
+    public void showScoreBonus(int bonus) {
+        NotificationPanel notificationPanel = new NotificationPanel("+" + bonus);
+        groupNotification.getChildren().add(notificationPanel);
+        notificationPanel.showScore(groupNotification.getChildren());
     }
 }

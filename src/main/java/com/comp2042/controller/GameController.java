@@ -23,6 +23,7 @@ public class GameController implements InputEventListener {
     public DownData onDownEvent(MoveEvent event) {
         boolean canMove = board.moveBrickDown();
         ClearRow clearRow = null;
+
         if (!canMove) {
             board.mergeBrickToBackground();
             clearRow = board.clearRows();
@@ -40,7 +41,11 @@ public class GameController implements InputEventListener {
                 board.getScore().add(1);
             }
         }
-        return new DownData(clearRow, board.getViewData());
+
+        // build DownData, let controller handle clear-row, then return it
+        DownData downData = new DownData(clearRow, board.getViewData());
+        handleClearRow(downData);
+        return downData;
     }
 
     @Override
@@ -66,5 +71,13 @@ public class GameController implements InputEventListener {
     public void createNewGame() {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+    }
+
+    private void handleClearRow(DownData downData) {
+        if (downData.getClearRow() != null
+                && downData.getClearRow().getLinesRemoved() > 0) {
+            int bonus = downData.getClearRow().getScoreBonus();
+            viewGuiController.showScoreBonus(bonus);
+        }
     }
 }
