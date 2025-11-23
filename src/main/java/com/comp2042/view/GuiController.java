@@ -5,6 +5,7 @@ import com.comp2042.controller.event.EventSource;
 import com.comp2042.controller.event.EventType;
 import com.comp2042.controller.event.MoveEvent;
 import com.comp2042.model.DownData;
+import com.comp2042.model.TetrisBoard;
 import com.comp2042.model.ViewData;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -12,7 +13,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
@@ -126,7 +126,7 @@ public class GuiController implements Initializable {
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         // Background cells
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
-        for (int i = 2; i < boardMatrix.length; i++) {
+        for (int i = TetrisBoard.HIDDEN_ROWS; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(Color.TRANSPARENT);
@@ -201,7 +201,7 @@ public class GuiController implements Initializable {
     }
 
     public void refreshGameBackground(int[][] board) {
-        for (int i = 2; i < board.length; i++) {
+        for (int i = TetrisBoard.HIDDEN_ROWS; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 setRectangleData(board[i][j], displayMatrix[i][j]);
             }

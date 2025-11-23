@@ -1,13 +1,13 @@
 package com.comp2042.controller;
 
 import com.comp2042.controller.event.EventSource;
-import com.comp2042.view.GuiController;
 import com.comp2042.controller.event.MoveEvent;
 import com.comp2042.model.*;
+import com.comp2042.view.GuiController;
 
 public class GameController implements InputEventListener {
 
-    private Board board = new TetrisBoard(25, 10);
+    private Board board = new TetrisBoard(TetrisBoard.BOARD_HEIGHT, TetrisBoard.BOARD_WIDTH);
 
     private final GuiController viewGuiController;
 

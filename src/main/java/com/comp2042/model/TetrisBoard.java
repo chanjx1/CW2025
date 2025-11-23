@@ -16,8 +16,14 @@ public class TetrisBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+
+    // Board configuration
+    public static final int BOARD_HEIGHT = 25;
+    public static final int BOARD_WIDTH  = 10;
+    public static final int HIDDEN_ROWS  = 2;
+
     private static final int SPAWN_X = 4;
-    private static final int SPAWN_Y = 2;
+    private static final int SPAWN_Y = HIDDEN_ROWS;
 
     public TetrisBoard(int width, int height) {
         this.width = width;
