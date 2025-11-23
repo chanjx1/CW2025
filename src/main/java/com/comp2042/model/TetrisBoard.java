@@ -16,6 +16,8 @@ public class TetrisBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+    private static final int SPAWN_X = 4;
+    private static final int SPAWN_Y = 2;
 
     public TetrisBoard(int width, int height) {
         this.width = width;
@@ -86,7 +88,7 @@ public class TetrisBoard implements Board {
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(4, 10);
+        currentOffset = new Point(SPAWN_X, SPAWN_Y);
         return MatrixUtils.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
     }
 
