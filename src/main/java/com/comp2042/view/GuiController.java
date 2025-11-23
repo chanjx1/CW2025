@@ -116,12 +116,9 @@ public class GuiController implements Initializable {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 int blockSize = BRICK_SIZE - 1;
                 Rectangle rectangle = new Rectangle(blockSize, blockSize);
-                rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
 
-                rectangle.setStrokeWidth(1.2);
-                rectangle.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
-                rectangle.setArcWidth(9);
-                rectangle.setArcHeight(9);
+                // use shared styling helper
+                styleBlock(rectangle, brick.getBrickData()[i][j]);
 
                 activeBrick[i][j] = rectangle;
                 brickOverlay.getChildren().add(rectangle);
@@ -148,6 +145,14 @@ public class GuiController implements Initializable {
             case 7: return Color.BURLYWOOD;
             default: return Color.WHITE;
         }
+    }
+
+    private void styleBlock(Rectangle rectangle, int colorCode) {
+        rectangle.setFill(getFillColor(colorCode));
+        rectangle.setArcWidth(9);
+        rectangle.setArcHeight(9);
+        rectangle.setStrokeWidth(1.2);
+        rectangle.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
     }
 
     private void updateBrickPosition(ViewData brick) {
@@ -179,9 +184,7 @@ public class GuiController implements Initializable {
     }
 
     private void setRectangleData(int color, Rectangle rectangle) {
-        rectangle.setFill(getFillColor(color));
-        rectangle.setArcHeight(9);
-        rectangle.setArcWidth(9);
+        styleBlock(rectangle, color);
     }
 
     private void moveDown(MoveEvent event) {
