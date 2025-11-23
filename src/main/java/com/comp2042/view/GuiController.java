@@ -61,40 +61,65 @@ public class GuiController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
-        gamePanel.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent keyEvent) {
-                if (!isPause.get() && !isGameOver.get()) {
-                    if (keyEvent.getCode() == KeyCode.LEFT || keyEvent.getCode() == KeyCode.A) {
-                        refreshBrick(eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
-                        keyEvent.consume();
-                    }
-                    if (keyEvent.getCode() == KeyCode.RIGHT || keyEvent.getCode() == KeyCode.D) {
-                        refreshBrick(eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER)));
-                        keyEvent.consume();
-                    }
-                    if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
-                        refreshBrick(eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
-                        keyEvent.consume();
-                    }
-                    if (keyEvent.getCode() == KeyCode.DOWN || keyEvent.getCode() == KeyCode.S) {
-                        moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
-                        keyEvent.consume();
-                    }
-                }
-                if (keyEvent.getCode() == KeyCode.N) {
-                    newGame(null);
-                }
-            }
-        });
+
+        // Delegate to a separate method
+        gamePanel.setOnKeyPressed(this::handleKeyPressed);
 
         gameOverPanel.setVisible(false);
 
-        // Just kept from original – currently unused visual effect
         final Reflection reflection = new Reflection();
         reflection.setFraction(0.8);
         reflection.setTopOpacity(0.9);
         reflection.setTopOffset(-12);
+    }
+
+    private void handleKeyPressed(KeyEvent keyEvent) {
+        KeyCode code = keyEvent.getCode();
+
+        // N = new game (works even when paused/game over)
+        if (code == KeyCode.N) {
+            newGame(null);
+            keyEvent.consume();
+            return;
+        }
+
+        // Ignore movement keys if paused or game over
+        if (isPause.get() || isGameOver.get()) {
+            return;
+        }
+
+        // Map keys to actions
+        switch (code) {
+            case LEFT:
+            case A:
+                refreshBrick(eventListener.onLeftEvent(
+                        new MoveEvent(EventType.LEFT, EventSource.USER)));
+                keyEvent.consume();
+                break;
+
+            case RIGHT:
+            case D:
+                refreshBrick(eventListener.onRightEvent(
+                        new MoveEvent(EventType.RIGHT, EventSource.USER)));
+                keyEvent.consume();
+                break;
+
+            case UP:
+            case W:
+                refreshBrick(eventListener.onRotateEvent(
+                        new MoveEvent(EventType.ROTATE, EventSource.USER)));
+                keyEvent.consume();
+                break;
+
+            case DOWN:
+            case S:
+                moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
+                keyEvent.consume();
+                break;
+
+            default:
+                // other keys ignored
+        }
     }
 
     /** Called once at the start of a game to build the view. */
