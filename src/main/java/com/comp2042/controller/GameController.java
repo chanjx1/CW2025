@@ -60,6 +60,36 @@ public class GameController implements InputEventListener {
         return downData;
     }
 
+    public DownData onHardDropEvent(MoveEvent event) {
+        ClearRow clearRow = null;
+
+        // 1) Drop the piece as far as possible, counting soft-drop score
+        boolean canMove;
+        do {
+            canMove = board.moveBrickDown();
+            if (canMove && event.getEventSource() == EventSource.USER) {
+                // Same behaviour as holding DOWN: +1 per row
+                board.getScore().add(1);
+            }
+        } while (canMove);
+
+        // 2) Lock piece, clear rows, update score and background
+        board.mergeBrickToBackground();
+        clearRow = board.clearRows();
+        if (clearRow.getLinesRemoved() > 0) {
+            board.getScore().add(clearRow.getScoreBonus());
+        }
+        if (board.createNewBrick()) {
+            viewGuiController.gameOver();
+        }
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+
+        // 3) Build DownData for the view (new brick position, etc.)
+        DownData downData = new DownData(clearRow, board.getViewData());
+        handleClearRow(downData);
+        return downData;
+    }
+
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
         board.moveBrickLeft();

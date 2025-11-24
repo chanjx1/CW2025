@@ -152,6 +152,11 @@ public class GuiController implements Initializable {
                 keyEvent.consume();
                 break;
 
+            case SPACE:
+                moveHardDrop(new MoveEvent(EventType.HARD_DROP, EventSource.USER));
+                keyEvent.consume();
+                break;
+
             default:
                 // other keys ignored
         }
@@ -254,6 +259,14 @@ public class GuiController implements Initializable {
     private void moveDown(MoveEvent event) {
         if (gameState.get() == GameState.RUNNING) {
             DownData downData = eventListener.onDownEvent(event);
+            refreshBrick(downData.getViewData());
+        }
+        gamePanel.requestFocus();
+    }
+
+    private void moveHardDrop(MoveEvent event) {
+        if (gameState.get() == GameState.RUNNING) {
+            DownData downData = eventListener.onHardDropEvent(event);
             refreshBrick(downData.getViewData());
         }
         gamePanel.requestFocus();
