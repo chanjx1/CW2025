@@ -87,6 +87,13 @@ public class GuiController implements Initializable {
             return;
         }
 
+        // P = pause/resume (must work even when currently paused)
+        if (code == KeyCode.P) {
+            pauseGame(null);
+            keyEvent.consume();
+            return;
+        }
+
         // Ignore movement keys if paused or game over
         if (isPause.get() || isGameOver.get()) {
             return;
@@ -256,8 +263,23 @@ public class GuiController implements Initializable {
     }
 
     public void pauseGame(ActionEvent actionEvent) {
+        // If the game hasn't started or we are already game over, do nothing
+        if (timeLine == null || isGameOver.get()) {
+            gamePanel.requestFocus();
+            return;
+        }
+
+        if (isPause.get()) {
+            // Currently paused -> resume
+            timeLine.play();
+            isPause.set(false);
+        } else {
+            // Currently running -> pause
+            timeLine.stop();
+            isPause.set(true);
+        }
+
         gamePanel.requestFocus();
-        // could toggle isPause here if you want a real pause button
     }
 
     public void showScoreBonus(int bonus) {
