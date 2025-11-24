@@ -7,6 +7,13 @@ import com.comp2042.model.bricks.RandomBrickGenerator;
 
 import java.awt.*;
 
+/**
+ * Core model of the Tetris game board.
+ *
+ * The board uses a couple of "hidden" rows at the top (HIDDEN_ROWS) where new
+ * bricks spawn. These rows are not drawn in the UI, but they allow pieces to
+ * appear smoothly from above the visible playfield.
+ */
 public class TetrisBoard implements Board {
 
     private final int width;
@@ -17,11 +24,17 @@ public class TetrisBoard implements Board {
     private Point currentOffset;
     private final Score score;
 
-    // Board configuration
+    // Board configuration (logical size in cells)
     public static final int BOARD_HEIGHT = 25;
     public static final int BOARD_WIDTH  = 10;
+
+    /**
+     * Number of hidden rows at the top of the board.
+     * These rows are used for spawning bricks and are not drawn in the UI.
+     */
     public static final int HIDDEN_ROWS  = 2;
 
+    // Spawn position for new bricks (measured in board coordinates)
     private static final int SPAWN_X = 4;
     private static final int SPAWN_Y = HIDDEN_ROWS;
 
@@ -90,6 +103,12 @@ public class TetrisBoard implements Board {
         }
     }
 
+    /**
+     * Creates a new random brick and positions it at the spawn location.
+     *
+     * @return true if the new brick immediately intersects existing blocks
+     *         (i.e. there is no space to spawn -> game over condition), false otherwise.
+     */
     @Override
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();

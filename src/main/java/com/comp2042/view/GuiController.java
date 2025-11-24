@@ -30,8 +30,20 @@ import javafx.scene.control.Label;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * GUI controller for the game.
+ * This class is responsible for:
+ * - Rendering the board and active brick
+ * - Handling user input (keyboard)
+ * - Driving the Timeline that makes the brick fall
+ * Game rules and scoring are delegated to GameController.
+ */
 public class GuiController implements Initializable {
 
+    /**
+     * Simple game state machine used by the GUI to decide when to
+     * accept input and when to stop the Timeline.
+     */
     private enum GameState {
         RUNNING,
         PAUSED,
@@ -83,6 +95,12 @@ public class GuiController implements Initializable {
         reflection.setTopOffset(-12);
     }
 
+    /**
+     * Centralised keyboard handler.
+     * N = new game (always allowed)
+     * P = pause / resume (always allowed)
+     * Arrow keys / WASD = move / rotate active brick (only when RUNNING)
+     */
     private void handleKeyPressed(KeyEvent keyEvent) {
         KeyCode code = keyEvent.getCode();
 
@@ -139,7 +157,11 @@ public class GuiController implements Initializable {
         }
     }
 
-    /** Called once at the start of a game to build the view. */
+    /**
+     * Called once at the start of the game to build the initial view.
+     * It creates the background grid cells and the rectangles used to draw
+     * the active brick overlay, and starts the falling Timeline.
+     */
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         // Background cells
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
@@ -264,6 +286,11 @@ public class GuiController implements Initializable {
         gameState.set(GameState.RUNNING);
     }
 
+    /**
+     * Toggles between RUNNING and PAUSED.
+     * When paused, the Timeline is stopped and movement input is ignored.
+     * When resumed, the Timeline continues from where it left off.
+     */
     public void pauseGame(ActionEvent actionEvent) {
         // If the game hasn't started or we are already game over, do nothing
         if (timeLine == null || gameState.get() == GameState.GAME_OVER) {

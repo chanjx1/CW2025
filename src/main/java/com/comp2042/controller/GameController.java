@@ -5,6 +5,11 @@ import com.comp2042.controller.event.MoveEvent;
 import com.comp2042.model.*;
 import com.comp2042.view.GuiController;
 
+/**
+ * GameController acts as the "C" in MVC.
+ * It owns the game rules, talks to the Board model, and instructs the GUI what to display.
+ * Input events come from GuiController via the InputEventListener interface.
+ */
 public class GameController implements InputEventListener {
 
     private Board board = new TetrisBoard(TetrisBoard.BOARD_HEIGHT, TetrisBoard.BOARD_WIDTH);
@@ -19,6 +24,13 @@ public class GameController implements InputEventListener {
         viewGuiController.bindScore(board.getScore().scoreProperty());
     }
 
+    /**
+     * Handles a single "tick" of the brick moving down.
+     * - Moves the current brick down if possible
+     * - Merges it into the background when it can no longer move
+     * - Clears full rows and updates the score
+     * - Creates a new brick, or triggers game over if the board is blocked
+     */
     @Override
     public DownData onDownEvent(MoveEvent event) {
         boolean canMove = board.moveBrickDown();
@@ -73,6 +85,12 @@ public class GameController implements InputEventListener {
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
     }
 
+    /**
+     * Applies visual feedback for cleared rows.
+     * The controller interprets the DownData (model-level information)
+     * and then asks the view to show the score bonus. This keeps the GUI
+     * free from game-logic decisions.
+     */
     private void handleClearRow(DownData downData) {
         if (downData.getClearRow() != null
                 && downData.getClearRow().getLinesRemoved() > 0) {

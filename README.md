@@ -25,6 +25,7 @@ All Refactoring work is fully functional and tested.
 - `GameController` now contains gameplay logic.
 - `GuiController` handles UI rendering, keyboard input, and animations.
 - Created `AbstractBrick` to remove duplicated code from all brick classes.
+- Replaced boolean flags (`isPause`, `isGameOver`) with a small `GameState` enum to make state transitions clearer and less error-prone.
 #### Design Patterns Used
 ##### Strategy Pattern
 - `BrickGenerator` and `RandomBrickGenerator` implement interchangeable generation strategies.
@@ -43,7 +44,9 @@ All tests pass using JUnit 5 and Maven Surefire Plugin.
 - Fixed incorrect spawning position (bricks dropping from middle).
 - Fixed GUI handling of clear-row events.
 - Cleaned event-handling duplication.
-- Improved keyboard responsiveness.
+- Fixed pause behaviour so the game actually freezes/resumes the falling Timeline.
+- Ensured score is displayed correctly via a HUD label bound to the Score property.
+
 
 ## Implemented and Working Properly
 1. Complete refactoring to MVC
@@ -53,6 +56,8 @@ All tests pass using JUnit 5 and Maven Surefire Plugin.
 5. Centralised input handling (cleaner key events)
 6. Improved controller/view separation 
 7. Fixed piece spawning, score update, and clear-row event flow
+8. Pause and resume via the P key with correct state handling
+9. Live score display in the top-right HUD bound to the model Score
 
 ## Implemented but Not Working Properly
 * None

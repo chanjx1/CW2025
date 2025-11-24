@@ -9,7 +9,9 @@ import java.util.List;
 
 /**
  * Base class for all tetromino bricks.
- * Stores the rotation matrices and returns defensive copies.
+ * Each concrete brick only defines its rotation matrices. Common behaviour such as
+ * storing the rotations and returning a defensive copy is handled here, which
+ * removes a lot of duplication from the individual brick classes.
  */
 public abstract class AbstractBrick implements Brick {
 
