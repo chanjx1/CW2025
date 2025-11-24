@@ -9,9 +9,9 @@ import com.comp2042.model.TetrisBoard;
 import com.comp2042.model.ViewData;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -31,6 +31,12 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class GuiController implements Initializable {
+
+    private enum GameState {
+        RUNNING,
+        PAUSED,
+        GAME_OVER
+    }
 
     private static final int BRICK_SIZE = 20;
 
@@ -58,8 +64,8 @@ public class GuiController implements Initializable {
     private Timeline timeLine;
     private InputEventListener eventListener;
 
-    private final BooleanProperty isPause = new SimpleBooleanProperty();
-    private final BooleanProperty isGameOver = new SimpleBooleanProperty();
+    private final ObjectProperty<GameState> gameState =
+            new SimpleObjectProperty<>(GameState.RUNNING);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -95,7 +101,7 @@ public class GuiController implements Initializable {
         }
 
         // Ignore movement keys if paused or game over
-        if (isPause.get() || isGameOver.get()) {
+        if (gameState.get() != GameState.RUNNING) {
             return;
         }
 
@@ -206,7 +212,7 @@ public class GuiController implements Initializable {
     }
 
     private void refreshBrick(ViewData brick) {
-        if (!isPause.get()) {
+        if (gameState.get() == GameState.RUNNING) {
             updateBrickPosition(brick);
         }
     }
@@ -224,11 +230,8 @@ public class GuiController implements Initializable {
     }
 
     private void moveDown(MoveEvent event) {
-        if (!isPause.get()) {
+        if (gameState.get() == GameState.RUNNING) {
             DownData downData = eventListener.onDownEvent(event);
-
-            // Controller now handles whether to show score bonus.
-            // View only updates brick position.
             refreshBrick(downData.getViewData());
         }
         gamePanel.requestFocus();
@@ -249,7 +252,7 @@ public class GuiController implements Initializable {
     public void gameOver() {
         timeLine.stop();
         gameOverPanel.setVisible(true);
-        isGameOver.set(true);
+        gameState.set(GameState.GAME_OVER);
     }
 
     public void newGame(ActionEvent actionEvent) {
@@ -258,25 +261,24 @@ public class GuiController implements Initializable {
         eventListener.createNewGame();
         gamePanel.requestFocus();
         timeLine.play();
-        isPause.set(false);
-        isGameOver.set(false);
+        gameState.set(GameState.RUNNING);
     }
 
     public void pauseGame(ActionEvent actionEvent) {
         // If the game hasn't started or we are already game over, do nothing
-        if (timeLine == null || isGameOver.get()) {
+        if (timeLine == null || gameState.get() == GameState.GAME_OVER) {
             gamePanel.requestFocus();
             return;
         }
 
-        if (isPause.get()) {
+        if (gameState.get() == GameState.PAUSED) {
             // Currently paused -> resume
             timeLine.play();
-            isPause.set(false);
-        } else {
+            gameState.set(GameState.RUNNING);
+        } else if (gameState.get() == GameState.RUNNING) {
             // Currently running -> pause
             timeLine.stop();
-            isPause.set(true);
+            gameState.set(GameState.PAUSED);
         }
 
         gamePanel.requestFocus();
