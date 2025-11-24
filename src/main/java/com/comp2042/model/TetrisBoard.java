@@ -129,7 +129,7 @@ public class TetrisBoard implements Board {
 
     @Override
     public void newGame() {
-        currentGameMatrix = new int[width][height];
+        currentGameMatrix = new int[BOARD_HEIGHT][BOARD_WIDTH];
         score.reset();
         createNewBrick();
     }

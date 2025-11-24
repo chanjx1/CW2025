@@ -3,6 +3,7 @@
 <?import javafx.scene.text.Text?>
 <?import java.net.URL?>
 <?import com.comp2042.view.GameOverPanel?>
+<?import javafx.scene.control.Label?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.comp2042.view.GuiController">
@@ -10,16 +11,12 @@
     <!-- Dim full-window background grid -->
     <GridPane fx:id="brickPanel" hgap="1" vgap="1" />
 
-    <!-- Main game frame, centered -->
+    <!-- Frame centered -->
     <StackPane alignment="CENTER"
                maxWidth="150" maxHeight="400"
                prefWidth="150" prefHeight="400"
                styleClass="gameBoard">
-
-        <!-- Background board cells -->
         <GridPane fx:id="gamePanel" hgap="0" vgap="1" />
-
-        <!-- Overlay where the active falling brick rectangles are drawn -->
         <Pane fx:id="brickOverlay" pickOnBounds="false" />
     </StackPane>
 
@@ -29,6 +26,13 @@
             <GameOverPanel fx:id="gameOverPanel" />
         </VBox>
     </Group>
+
+    <Label fx:id="scoreLabel"
+           text="Score: 0"
+           StackPane.alignment="TOP_RIGHT"
+           translateX="-20"
+           translateY="20"
+           style="-fx-text-fill: white; -fx-font-size: 16;" />
 
     <stylesheets>
         <URL value="@window_style.css"/>

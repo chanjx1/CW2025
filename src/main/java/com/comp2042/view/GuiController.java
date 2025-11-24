@@ -25,6 +25,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import javafx.scene.control.Label;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -47,6 +48,9 @@ public class GuiController implements Initializable {
 
     @FXML
     private GameOverPanel gameOverPanel;
+
+    @FXML
+    private Label scoreLabel;
 
     private Rectangle[][] displayMatrix;  // background blocks
     private Rectangle[][] activeBrick;    // current falling piece
@@ -227,9 +231,12 @@ public class GuiController implements Initializable {
         this.eventListener = eventListener;
     }
 
-    /** Hook to bind a score label later if you want. */
-    public void bindScore(IntegerProperty integerProperty) {
-        // e.g. scoreLabel.textProperty().bind(integerProperty.asString());
+    public void bindScore(IntegerProperty scoreProperty) {
+        if (scoreLabel != null) {
+            scoreLabel.textProperty().bind(
+                    scoreProperty.asString("Score: %d")
+            );
+        }
     }
 
     public void gameOver() {
