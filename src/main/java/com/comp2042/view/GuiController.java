@@ -72,6 +72,7 @@ public class GuiController implements Initializable {
 
     private Rectangle[][] displayMatrix;  // background blocks
     private Rectangle[][] activeBrick;    // current falling piece
+    private Rectangle[][] ghostBrick;     // ghost projection of current piece
 
     private Timeline timeLine;
     private InputEventListener eventListener;
@@ -175,7 +176,27 @@ public class GuiController implements Initializable {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(Color.TRANSPARENT);
                 displayMatrix[i][j] = rectangle;
-                gamePanel.add(rectangle, j, i - 2);
+                gamePanel.add(rectangle, j, i - TetrisBoard.HIDDEN_ROWS);
+            }
+        }
+
+        // Ghost brick overlay (drawn first so it stays under the active brick)
+        ghostBrick = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                int blockSize = BRICK_SIZE - 1;
+                Rectangle rectangle = new Rectangle(blockSize, blockSize);
+
+                rectangle.setFill(Color.TRANSPARENT);
+                rectangle.setStroke(Color.WHITE);
+                rectangle.setOpacity(0.35);
+                rectangle.setArcWidth(9);
+                rectangle.setArcHeight(9);
+                rectangle.setStrokeWidth(1.0);
+                rectangle.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
+
+                ghostBrick[i][j] = rectangle;
+                brickOverlay.getChildren().add(rectangle);
             }
         }
 
@@ -224,14 +245,60 @@ public class GuiController implements Initializable {
         rectangle.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
     }
 
+    /**
+     * Uses the controller's canMoveDown() to find the board Y position
+     * where the current brick would land if dropped straight down.
+     */
+    private int calculateGhostY(ViewData brick) {
+        int ghostY = brick.getyPosition();  // BOARD coordinates
+
+        // Keep moving down until the next row would collide
+        while (eventListener != null && eventListener.canMoveDown(brick, ghostY + 1)) {
+            ghostY++;
+        }
+        return ghostY;
+    }
+
+    /**
+     * Positions and shows the ghost rectangles according to the landing spot.
+     */
+    private void updateGhostPosition(ViewData brick) {
+        if (ghostBrick == null || eventListener == null) {
+            return;
+        }
+
+        int[][] shape = brick.getBrickData();
+        int ghostY = calculateGhostY(brick);  // BOARD coordinates
+
+        for (int i = 0; i < shape.length; i++) {
+            for (int j = 0; j < shape[i].length; j++) {
+                Rectangle g = ghostBrick[i][j];
+
+                if (shape[i][j] == 0) {
+                    g.setVisible(false);
+                    continue;
+                }
+
+                g.setVisible(true);
+                // Same X mapping as active brick
+                g.setX((brick.getxPosition() + j) * BRICK_SIZE);
+                // Same Y mapping as active brick, but using ghostY
+                g.setY((ghostY + i - TetrisBoard.HIDDEN_ROWS) * BRICK_SIZE);
+            }
+        }
+    }
+
     private void updateBrickPosition(ViewData brick) {
+        // First update the ghost projection
+        updateGhostPosition(brick);
+
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 Rectangle r = activeBrick[i][j];
 
                 // Position in pixels inside the brickOverlay Pane
                 r.setX((brick.getxPosition() + j) * BRICK_SIZE);
-                r.setY((brick.getyPosition() + i - 2) * BRICK_SIZE);
+                r.setY((brick.getyPosition() + i - TetrisBoard.HIDDEN_ROWS) * BRICK_SIZE);
 
                 r.setFill(getFillColor(brick.getBrickData()[i][j]));
             }

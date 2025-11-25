@@ -116,6 +116,53 @@ public class GameController implements InputEventListener {
     }
 
     /**
+     * Helper used by the GUI to compute the ghost landing position.
+     * It checks whether placing the current brick with its top row at
+     * newY (in BOARD coordinates) would collide with the board edges
+     * or any existing blocks in the background matrix.
+     */
+    @Override
+    public boolean canMoveDown(ViewData brick, int newY) {
+        int[][] shape = brick.getBrickData();
+        int[][] matrix = board.getBoardMatrix();
+
+        int height = matrix.length;       // rows
+        int width  = matrix[0].length;    // columns
+
+        int xPos = brick.getxPosition();
+
+        for (int i = 0; i < shape.length; i++) {
+            for (int j = 0; j < shape[i].length; j++) {
+                if (shape[i][j] == 0) {
+                    continue;
+                }
+
+                int boardY = newY + i;    // BOARD coordinates
+                int boardX = xPos + j;
+
+                // Outside left/right or below bottom => cannot move
+                if (boardX < 0 || boardX >= width) {
+                    return false;
+                }
+                if (boardY >= height) {
+                    return false;
+                }
+
+                // Above the visible area is fine (no collision)
+                if (boardY < 0) {
+                    continue;
+                }
+
+                // Collision with an existing block in the background
+                if (matrix[boardY][boardX] != 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Applies visual feedback for cleared rows.
      * The controller interprets the DownData (model-level information)
      * and then asks the view to show the score bonus. This keeps the GUI
