@@ -21,9 +21,10 @@ public class GameController implements InputEventListener {
         board.createNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
-        viewGuiController.bindScore(board.getScore().scoreProperty());
 
-        // initialise HOLD box as empty
+        // NEW: Bind Score AND Level
+        viewGuiController.bindGameStats(board.getScore().scoreProperty(), board.getScore().levelProperty());
+
         if (board instanceof TetrisBoard) {
             viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
         }
@@ -39,36 +40,37 @@ public class GameController implements InputEventListener {
     @Override
     public DownData onDownEvent(MoveEvent event) {
         boolean fromUser = event.getEventSource() == EventSource.USER;
-
         DownData downData = board.stepDown(fromUser);
 
-        // Update background after any change to the board
+        // NEW: Manually add score for soft drop if user pressed down and piece moved (no collision yet)
+        if (fromUser && downData.getClearRow() == null && !downData.isGameOver()) {
+            board.getScore().addScore(1);
+        }
+
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
-        // If a new brick spawned and instantly collided, the board reports game over
         if (downData.isGameOver()) {
             viewGuiController.gameOver();
         }
-
-        // Handle line-clear visual effects (bonus popup)
         handleClearRow(downData);
-
         return downData;
     }
 
+    // For hard drop, we can just give a fixed bonus for simplicity
     public DownData onHardDropEvent(MoveEvent event) {
         boolean fromUser = event.getEventSource() == EventSource.USER;
-
         DownData downData = board.hardDrop(fromUser);
 
-        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        // Fixed bonus for hard drop (since we don't calculate exact rows anymore)
+        if (fromUser) {
+            board.getScore().addScore(20);
+        }
 
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
         if (downData.isGameOver()) {
             viewGuiController.gameOver();
         }
-
         handleClearRow(downData);
-
         return downData;
     }
 
@@ -145,18 +147,23 @@ public class GameController implements InputEventListener {
     }
 
     /**
-     * Applies visual feedback for cleared rows.
-     * The controller interprets the DownData (model-level information)
-     * and then asks the view to show the score bonus. This keeps the GUI
-     * free from game-logic decisions.
+     * Applies visual feedback and updates score/level for cleared rows.
      */
     private void handleClearRow(DownData downData) {
         if (downData.getClearRow() != null
                 && downData.getClearRow().getLinesRemoved() > 0) {
-            int bonus = ScoringRules.lineClearBonus(
-                    downData.getClearRow().getLinesRemoved()
-            );
-            viewGuiController.showScoreBonus(bonus);
+
+            int linesRemoved = downData.getClearRow().getLinesRemoved();
+
+            // 1. Calculate Score Bonus
+            int bonus = ScoringRules.lineClearBonus(linesRemoved);
+            board.getScore().addScore(bonus);
+
+            // 2. Update Lines and Level
+            board.getScore().addLines(linesRemoved);
+
+            // 3. Show Animation
+            viewGuiController.showScoreBonus("+" + bonus);
         }
     }
 

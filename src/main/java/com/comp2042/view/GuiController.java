@@ -158,10 +158,28 @@ public class GuiController implements Initializable {
         this.boardRenderer.setEventListener(eventListener);
     }
 
-    public void bindScore(IntegerProperty scoreProperty) {
+    public void bindGameStats(IntegerProperty scoreProp, IntegerProperty levelProp) {
+        // Bind Score Label
         if (scoreLabel != null) {
-            scoreLabel.textProperty().bind(scoreProperty.asString("Score: %d"));
+            scoreLabel.textProperty().bind(scoreProp.asString("Score: %d"));
         }
+
+        // Listen for Level changes to adjust speed
+        levelProp.addListener((obs, oldVal, newVal) -> {
+            int level = newVal.intValue();
+            // Speed formula: Base 400ms, decreases by 50ms per level, capped at 100ms
+            double delay = Math.max(100, 400 - ((level - 1) * 50));
+
+            timeLine.stop();
+            timeLine.getKeyFrames().setAll(new KeyFrame(
+                    Duration.millis(delay),
+                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            ));
+            timeLine.play();
+
+            // Optional: Show a "LEVEL UP" notification
+            showScoreBonus("LEVEL " + level);
+        });
     }
 
     public void gameOver() {
@@ -194,8 +212,16 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
     }
 
-    public void showScoreBonus(int bonus) {
-        NotificationPanel notificationPanel = new NotificationPanel("+" + bonus);
+    public void showScoreBonus(String text) {
+        NotificationPanel notificationPanel = new NotificationPanel(text);
+
+        // FIX: Offset Y position if other notifications are already active
+        // Each existing notification pushes the new one down by 25 pixels
+        int activeNotifications = groupNotification.getChildren().size();
+        double yOffset = activeNotifications * 25;
+
+        notificationPanel.setTranslateY(yOffset);
+
         groupNotification.getChildren().add(notificationPanel);
         notificationPanel.showScore(groupNotification.getChildren());
     }
