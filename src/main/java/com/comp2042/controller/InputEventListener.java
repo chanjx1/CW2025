@@ -8,11 +8,17 @@ public interface InputEventListener {
 
     DownData onDownEvent(MoveEvent event);
 
+    DownData onHardDropEvent(MoveEvent event);
+
     ViewData onLeftEvent(MoveEvent event);
 
     ViewData onRightEvent(MoveEvent event);
 
     ViewData onRotateEvent(MoveEvent event);
+
+    ViewData onHoldEvent(MoveEvent event);
+
+    boolean canMoveDown(ViewData brick, int newY);
 
     void createNewGame();
 }
