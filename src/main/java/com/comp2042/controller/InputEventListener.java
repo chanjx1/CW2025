@@ -16,6 +16,8 @@ public interface InputEventListener {
 
     ViewData onRotateEvent(MoveEvent event);
 
+    ViewData onHoldEvent(MoveEvent event);
+
     boolean canMoveDown(ViewData brick, int newY);
 
     void createNewGame();

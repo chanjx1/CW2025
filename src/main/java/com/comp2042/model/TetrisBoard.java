@@ -23,6 +23,8 @@ public class TetrisBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+    private Brick holdBrick = null;
+    private boolean holdUsedThisTurn = false;
 
     // Board configuration (logical size in cells)
     public static final int BOARD_HEIGHT = 25;
@@ -114,6 +116,7 @@ public class TetrisBoard implements Board {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
         currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        holdUsedThisTurn = false;
         return MatrixUtils.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
     }
 
@@ -151,5 +154,51 @@ public class TetrisBoard implements Board {
         currentGameMatrix = new int[BOARD_HEIGHT][BOARD_WIDTH];
         score.reset();
         createNewBrick();
+    }
+
+    @Override
+    public boolean holdCurrentBrick() {
+        // Only allow one hold per falling piece
+        if (holdUsedThisTurn) {
+            return false;
+        }
+        holdUsedThisTurn = true;
+
+        // Get the currently active brick from the rotator
+        Brick currentBrick = brickRotator.getBrick();  // we'll add this in BrickRotator
+
+        // First time holding: store current brick, spawn a fresh one
+        if (holdBrick == null) {
+            holdBrick = currentBrick;
+            // Spawn a new random brick as the active one
+            return createNewBrick();  // true if new brick immediately collides (game over)
+        }
+
+        // Subsequent holds: swap current with held
+        Brick temp = holdBrick;
+        holdBrick = currentBrick;
+
+        // Make the held brick the new active brick
+        brickRotator.setBrick(temp);
+
+        // Reset position for the new active brick at the spawn location
+        currentOffset = new Point(SPAWN_X, SPAWN_Y);
+
+        // Check if the swapped-in brick immediately collides (rare, but consistent)
+        return MatrixUtils.intersect(
+                currentGameMatrix,
+                brickRotator.getCurrentShape(),
+                (int) currentOffset.getX(),
+                (int) currentOffset.getY()
+        );
+    }
+
+    @Override
+    public int[][] getHoldBrickShape() {
+        if (holdBrick == null) {
+            return null;
+        }
+        // Use the default orientation (index 0) for the preview
+        return holdBrick.getShapeMatrix().get(0);
     }
 }

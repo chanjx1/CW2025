@@ -22,6 +22,11 @@ public class GameController implements InputEventListener {
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
+
+        // initialise HOLD box as empty
+        if (board instanceof TetrisBoard) {
+            viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
+        }
     }
 
     /**
@@ -174,5 +179,23 @@ public class GameController implements InputEventListener {
             int bonus = downData.getClearRow().getScoreBonus();
             viewGuiController.showScoreBonus(bonus);
         }
+    }
+
+    @Override
+    public ViewData onHoldEvent(MoveEvent event) {
+        TetrisBoard tBoard = (TetrisBoard) board;
+
+        boolean gameOver = tBoard.holdCurrentBrick();
+
+        // update HOLD box
+        int[][] holdShape = tBoard.getHoldBrickShape();
+        viewGuiController.showHoldPiece(holdShape);
+
+        if (gameOver) {
+            viewGuiController.gameOver();
+        }
+
+        // active piece has changed (new or swapped), so return its view
+        return board.getViewData();
     }
 }
