@@ -45,7 +45,8 @@ public class GameController implements InputEventListener {
             board.mergeBrickToBackground();
             clearRow = board.clearRows();
             if (clearRow.getLinesRemoved() > 0) {
-                board.getScore().add(clearRow.getScoreBonus());
+                int bonus = ScoringRules.lineClearBonus(clearRow.getLinesRemoved());
+                board.getScore().add(bonus);
             }
             if (board.createNewBrick()) {
                 viewGuiController.gameOver();
@@ -82,7 +83,7 @@ public class GameController implements InputEventListener {
         board.mergeBrickToBackground();
         clearRow = board.clearRows();
         if (clearRow.getLinesRemoved() > 0) {
-            board.getScore().add(clearRow.getScoreBonus());
+            board.getScore().add(ScoringRules.lineClearBonus(clearRow.getLinesRemoved()));
         }
         if (board.createNewBrick()) {
             viewGuiController.gameOver();
@@ -176,7 +177,9 @@ public class GameController implements InputEventListener {
     private void handleClearRow(DownData downData) {
         if (downData.getClearRow() != null
                 && downData.getClearRow().getLinesRemoved() > 0) {
-            int bonus = downData.getClearRow().getScoreBonus();
+            int bonus = ScoringRules.lineClearBonus(
+                    downData.getClearRow().getLinesRemoved()
+            );
             viewGuiController.showScoreBonus(bonus);
         }
     }

@@ -19,8 +19,6 @@ class MatrixUtilsTest {
 
         assertEquals(0, result.getLinesRemoved(),
                 "No complete rows should be removed");
-        assertEquals(0, result.getScoreBonus(),
-                "No score bonus when no rows are cleared");
 
         // Matrix should be unchanged
         assertArrayEquals(board, result.getNewMatrix(),
@@ -38,8 +36,6 @@ class MatrixUtilsTest {
         ClearRow result = MatrixUtils.checkRemoving(board);
 
         assertEquals(1, result.getLinesRemoved());
-        assertEquals(50, result.getScoreBonus(),
-                "Score bonus should be 50 * n^2 for n cleared rows");
 
         int[][] expected = {
                 {0, 0, 0},
@@ -60,8 +56,7 @@ class MatrixUtilsTest {
 
         ClearRow result = MatrixUtils.checkRemoving(board);
 
-        assertEquals(2, result.getLinesRemoved());
-        assertEquals(50 * 2 * 2, result.getScoreBonus(),
-                "Bonus should scale with 50 * rows^2 for two rows");
+        assertEquals(2, result.getLinesRemoved(),
+                "Should report the number of cleared lines");
     }
 }
