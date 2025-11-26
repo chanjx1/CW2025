@@ -201,4 +201,61 @@ public class TetrisBoard implements Board {
         // Use the default orientation (index 0) for the preview
         return holdBrick.getShapeMatrix().get(0);
     }
+
+    @Override
+    public DownData stepDown(boolean awardSoftDropScore) {
+        boolean canMove = moveBrickDown();
+        ClearRow clearRow = null;
+        boolean gameOver = false;
+
+        if (!canMove) {
+            // Lock the brick into the background and clear rows
+            mergeBrickToBackground();
+            clearRow = clearRows();
+
+            if (clearRow.getLinesRemoved() > 0) {
+                int bonus = ScoringRules.lineClearBonus(clearRow.getLinesRemoved());
+                score.add(bonus);
+            }
+
+            // Spawn next brick; if it immediately collides, we’re done
+            if (createNewBrick()) {
+                gameOver = true;
+            }
+
+        } else if (awardSoftDropScore) {
+            // Soft drop bonus: +1 per row the player actively drops
+            score.add(1);
+        }
+
+        return new DownData(clearRow, getViewData(), gameOver);
+    }
+
+    @Override
+    public DownData hardDrop(boolean awardSoftDropScore) {
+        ClearRow clearRow;
+        boolean gameOver;
+
+        // 1) Drop as far as possible, giving soft-drop score if requested
+        boolean canMove;
+        do {
+            canMove = moveBrickDown();
+            if (canMove && awardSoftDropScore) {
+                score.add(1);
+            }
+        } while (canMove);
+
+        // 2) Lock and clear rows with regular scoring
+        mergeBrickToBackground();
+        clearRow = clearRows();
+        if (clearRow.getLinesRemoved() > 0) {
+            int bonus = ScoringRules.lineClearBonus(clearRow.getLinesRemoved());
+            score.add(bonus);
+        }
+
+        // 3) Spawn a new brick and detect game over
+        gameOver = createNewBrick();
+
+        return new DownData(clearRow, getViewData(), gameOver);
+    }
 }

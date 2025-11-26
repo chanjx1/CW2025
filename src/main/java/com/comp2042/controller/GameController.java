@@ -38,61 +38,37 @@ public class GameController implements InputEventListener {
      */
     @Override
     public DownData onDownEvent(MoveEvent event) {
-        boolean canMove = board.moveBrickDown();
-        ClearRow clearRow = null;
+        boolean fromUser = event.getEventSource() == EventSource.USER;
 
-        if (!canMove) {
-            board.mergeBrickToBackground();
-            clearRow = board.clearRows();
-            if (clearRow.getLinesRemoved() > 0) {
-                int bonus = ScoringRules.lineClearBonus(clearRow.getLinesRemoved());
-                board.getScore().add(bonus);
-            }
-            if (board.createNewBrick()) {
-                viewGuiController.gameOver();
-            }
+        DownData downData = board.stepDown(fromUser);
 
-            viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        // Update background after any change to the board
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
-        } else {
-            if (event.getEventSource() == EventSource.USER) {
-                board.getScore().add(1);
-            }
+        // If a new brick spawned and instantly collided, the board reports game over
+        if (downData.isGameOver()) {
+            viewGuiController.gameOver();
         }
 
-        // build DownData, let controller handle clear-row, then return it
-        DownData downData = new DownData(clearRow, board.getViewData());
+        // Handle line-clear visual effects (bonus popup)
         handleClearRow(downData);
+
         return downData;
     }
 
     public DownData onHardDropEvent(MoveEvent event) {
-        ClearRow clearRow = null;
+        boolean fromUser = event.getEventSource() == EventSource.USER;
 
-        // 1) Drop the piece as far as possible, counting soft-drop score
-        boolean canMove;
-        do {
-            canMove = board.moveBrickDown();
-            if (canMove && event.getEventSource() == EventSource.USER) {
-                // Same behaviour as holding DOWN: +1 per row
-                board.getScore().add(1);
-            }
-        } while (canMove);
+        DownData downData = board.hardDrop(fromUser);
 
-        // 2) Lock piece, clear rows, update score and background
-        board.mergeBrickToBackground();
-        clearRow = board.clearRows();
-        if (clearRow.getLinesRemoved() > 0) {
-            board.getScore().add(ScoringRules.lineClearBonus(clearRow.getLinesRemoved()));
-        }
-        if (board.createNewBrick()) {
-            viewGuiController.gameOver();
-        }
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
-        // 3) Build DownData for the view (new brick position, etc.)
-        DownData downData = new DownData(clearRow, board.getViewData());
+        if (downData.isGameOver()) {
+            viewGuiController.gameOver();
+        }
+
         handleClearRow(downData);
+
         return downData;
     }
 

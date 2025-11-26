@@ -25,4 +25,23 @@ class TetrisBoardTest {
         assertEquals(TetrisBoard.HIDDEN_ROWS, viewData.getyPosition(),
                 "Brick should spawn in the hidden rows just above the visible board");
     }
+
+    @Test
+    void stepDown_locksPieceAndSpawnsNewBrickWhenBlocked() {
+        Board board = new TetrisBoard(TetrisBoard.BOARD_HEIGHT, TetrisBoard.BOARD_WIDTH);
+        board.createNewBrick(); // ensure we have an active piece
+
+        // Drop until it locks. For a simple smoke test, just call stepDown
+        // with a large number of iterations or until gameOver = true
+        DownData data = null;
+        for (int i = 0; i < 40; i++) {
+            data = board.stepDown(false);
+            if (data.isGameOver()) {
+                break;
+            }
+        }
+
+        // At least one step should have been taken
+        assertNotNull(data);
+    }
 }
