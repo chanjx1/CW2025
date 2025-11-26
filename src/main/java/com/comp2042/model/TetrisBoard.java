@@ -5,14 +5,10 @@ import com.comp2042.model.bricks.BrickGenerator;
 import com.comp2042.model.bricks.BrickRotator;
 import com.comp2042.model.bricks.RandomBrickGenerator;
 
-import java.awt.*;
+// REFACTORING: Removed java.awt.* dependency
 
 /**
  * Core model of the Tetris game board.
- *
- * The board uses a couple of "hidden" rows at the top (HIDDEN_ROWS) where new
- * bricks spawn. These rows are not drawn in the UI, but they allow pieces to
- * appear smoothly from above the visible playfield.
  */
 public class TetrisBoard implements Board {
 
@@ -21,22 +17,20 @@ public class TetrisBoard implements Board {
     private final BrickGenerator brickGenerator;
     private final BrickRotator brickRotator;
     private int[][] currentGameMatrix;
-    private Point currentOffset;
+
+    // REFACTORING: Replaced java.awt.Point with internal GamePoint
+    private GamePoint currentOffset;
+
     private final Score score;
     private Brick holdBrick = null;
     private boolean holdUsedThisTurn = false;
 
-    // Board configuration (logical size in cells)
+    // Board configuration
     public static final int BOARD_HEIGHT = 25;
     public static final int BOARD_WIDTH  = 10;
-
-    /**
-     * Number of hidden rows at the top of the board.
-     * These rows are used for spawning bricks and are not drawn in the UI.
-     */
     public static final int HIDDEN_ROWS  = 2;
 
-    // Spawn position for new bricks (measured in board coordinates)
+    // Spawn position
     private static final int SPAWN_X = 4;
     private static final int SPAWN_Y = HIDDEN_ROWS;
 
@@ -52,9 +46,10 @@ public class TetrisBoard implements Board {
     @Override
     public boolean moveBrickDown() {
         int[][] currentMatrix = MatrixUtils.copy(currentGameMatrix);
-        Point p = new Point(currentOffset);
-        p.translate(0, 1);
-        boolean conflict = MatrixUtils.intersect(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
+        // REFACTORING: using immutable GamePoint logic
+        GamePoint p = currentOffset.translate(0, 1);
+
+        boolean conflict = MatrixUtils.intersect(currentMatrix, brickRotator.getCurrentShape(), p.x(), p.y());
         if (conflict) {
             return false;
         } else {
@@ -63,13 +58,12 @@ public class TetrisBoard implements Board {
         }
     }
 
-
     @Override
     public boolean moveBrickLeft() {
         int[][] currentMatrix = MatrixUtils.copy(currentGameMatrix);
-        Point p = new Point(currentOffset);
-        p.translate(-1, 0);
-        boolean conflict = MatrixUtils.intersect(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
+        GamePoint p = currentOffset.translate(-1, 0);
+
+        boolean conflict = MatrixUtils.intersect(currentMatrix, brickRotator.getCurrentShape(), p.x(), p.y());
         if (conflict) {
             return false;
         } else {
@@ -81,9 +75,9 @@ public class TetrisBoard implements Board {
     @Override
     public boolean moveBrickRight() {
         int[][] currentMatrix = MatrixUtils.copy(currentGameMatrix);
-        Point p = new Point(currentOffset);
-        p.translate(1, 0);
-        boolean conflict = MatrixUtils.intersect(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
+        GamePoint p = currentOffset.translate(1, 0);
+
+        boolean conflict = MatrixUtils.intersect(currentMatrix, brickRotator.getCurrentShape(), p.x(), p.y());
         if (conflict) {
             return false;
         } else {
@@ -96,7 +90,7 @@ public class TetrisBoard implements Board {
     public boolean rotateLeftBrick() {
         int[][] currentMatrix = MatrixUtils.copy(currentGameMatrix);
         NextShapeInfo nextShape = brickRotator.getNextShape();
-        boolean conflict = MatrixUtils.intersect(currentMatrix, nextShape.getShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+        boolean conflict = MatrixUtils.intersect(currentMatrix, nextShape.getShape(), currentOffset.x(), currentOffset.y());
         if (conflict) {
             return false;
         } else {
@@ -105,19 +99,13 @@ public class TetrisBoard implements Board {
         }
     }
 
-    /**
-     * Creates a new random brick and positions it at the spawn location.
-     *
-     * @return true if the new brick immediately intersects existing blocks
-     *         (i.e. there is no space to spawn -> game over condition), false otherwise.
-     */
     @Override
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        currentOffset = new GamePoint(SPAWN_X, SPAWN_Y);
         holdUsedThisTurn = false;
-        return MatrixUtils.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+        return MatrixUtils.intersect(currentGameMatrix, brickRotator.getCurrentShape(), currentOffset.x(), currentOffset.y());
     }
 
     @Override
@@ -127,12 +115,12 @@ public class TetrisBoard implements Board {
 
     @Override
     public ViewData getViewData() {
-        return new ViewData(brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY(), brickGenerator.getNextBrick().getShapeMatrix().get(0));
+        return new ViewData(brickRotator.getCurrentShape(), currentOffset.x(), currentOffset.y(), brickGenerator.getNextBrick().getShapeMatrix().get(0));
     }
 
     @Override
     public void mergeBrickToBackground() {
-        currentGameMatrix = MatrixUtils.merge(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+        currentGameMatrix = MatrixUtils.merge(currentGameMatrix, brickRotator.getCurrentShape(), currentOffset.x(), currentOffset.y());
     }
 
     @Override
@@ -140,14 +128,12 @@ public class TetrisBoard implements Board {
         ClearRow clearRow = MatrixUtils.checkRemoving(currentGameMatrix);
         currentGameMatrix = clearRow.getNewMatrix();
         return clearRow;
-
     }
 
     @Override
     public Score getScore() {
         return score;
     }
-
 
     @Override
     public void newGame() {
@@ -158,38 +144,29 @@ public class TetrisBoard implements Board {
 
     @Override
     public boolean holdCurrentBrick() {
-        // Only allow one hold per falling piece
         if (holdUsedThisTurn) {
             return false;
         }
         holdUsedThisTurn = true;
 
-        // Get the currently active brick from the rotator
-        Brick currentBrick = brickRotator.getBrick();  // we'll add this in BrickRotator
+        Brick currentBrick = brickRotator.getBrick();
 
-        // First time holding: store current brick, spawn a fresh one
         if (holdBrick == null) {
             holdBrick = currentBrick;
-            // Spawn a new random brick as the active one
-            return createNewBrick();  // true if new brick immediately collides (game over)
+            return createNewBrick();
         }
 
-        // Subsequent holds: swap current with held
         Brick temp = holdBrick;
         holdBrick = currentBrick;
-
-        // Make the held brick the new active brick
         brickRotator.setBrick(temp);
 
-        // Reset position for the new active brick at the spawn location
-        currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        currentOffset = new GamePoint(SPAWN_X, SPAWN_Y);
 
-        // Check if the swapped-in brick immediately collides (rare, but consistent)
         return MatrixUtils.intersect(
                 currentGameMatrix,
                 brickRotator.getCurrentShape(),
-                (int) currentOffset.getX(),
-                (int) currentOffset.getY()
+                currentOffset.x(),
+                currentOffset.y()
         );
     }
 
@@ -198,7 +175,56 @@ public class TetrisBoard implements Board {
         if (holdBrick == null) {
             return null;
         }
-        // Use the default orientation (index 0) for the preview
         return holdBrick.getShapeMatrix().get(0);
+    }
+
+    @Override
+    public DownData stepDown(boolean awardSoftDropScore) {
+        boolean canMove = moveBrickDown();
+        ClearRow clearRow = null;
+        boolean gameOver = false;
+
+        if (!canMove) {
+            mergeBrickToBackground();
+            clearRow = clearRows();
+
+            if (clearRow.getLinesRemoved() > 0) {
+                int bonus = ScoringRules.lineClearBonus(clearRow.getLinesRemoved());
+                score.add(bonus);
+            }
+
+            if (createNewBrick()) {
+                gameOver = true;
+            }
+
+        } else if (awardSoftDropScore) {
+            score.add(1);
+        }
+
+        return new DownData(clearRow, getViewData(), gameOver);
+    }
+
+    @Override
+    public DownData hardDrop(boolean awardSoftDropScore) {
+        ClearRow clearRow;
+        boolean gameOver;
+        boolean canMove;
+        do {
+            canMove = moveBrickDown();
+            if (canMove && awardSoftDropScore) {
+                score.add(1);
+            }
+        } while (canMove);
+
+        mergeBrickToBackground();
+        clearRow = clearRows();
+        if (clearRow.getLinesRemoved() > 0) {
+            int bonus = ScoringRules.lineClearBonus(clearRow.getLinesRemoved());
+            score.add(bonus);
+        }
+
+        gameOver = createNewBrick();
+
+        return new DownData(clearRow, getViewData(), gameOver);
     }
 }

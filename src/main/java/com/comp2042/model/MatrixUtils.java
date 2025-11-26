@@ -8,19 +8,26 @@ import java.util.stream.Collectors;
 
 public class MatrixUtils {
 
-
-    //We don't want to instantiate this utility class
     private MatrixUtils(){
-
+        // Utility class
     }
 
+    /**
+     * Checks if the brick at position (x, y) collides with the board boundaries or existing blocks.
+     * Fixed: Loops now correctly map row->y and col->x.
+     */
     public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {
-        for (int i = 0; i < brick.length; i++) {
-            for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                if (brick[j][i] != 0 && (checkOutOfBound(matrix, targetX, targetY) || matrix[targetY][targetX] != 0)) {
-                    return true;
+        for (int row = 0; row < brick.length; row++) {
+            for (int col = 0; col < brick[row].length; col++) {
+                // If the brick cell is not empty
+                if (brick[row][col] != 0) {
+                    int targetX = x + col;
+                    int targetY = y + row;
+
+                    // Check bounds or collision with board content
+                    if (checkOutOfBound(matrix, targetX, targetY) || matrix[targetY][targetX] != 0) {
+                        return true;
+                    }
                 }
             }
         }
@@ -28,11 +35,9 @@ public class MatrixUtils {
     }
 
     private static boolean checkOutOfBound(int[][] matrix, int targetX, int targetY) {
-        boolean returnValue = true;
-        if (targetX >= 0 && targetY < matrix.length && targetX < matrix[targetY].length) {
-            returnValue = false;
-        }
-        return returnValue;
+        // targetY (row) must be within [0, height)
+        // targetX (col) must be within [0, width)
+        return targetY < 0 || targetY >= matrix.length || targetX < 0 || targetX >= matrix[targetY].length;
     }
 
     public static int[][] copy(int[][] original) {
@@ -46,14 +51,21 @@ public class MatrixUtils {
         return myInt;
     }
 
+    /**
+     * Merges the brick into the board matrix.
+     * Fixed: Loops now correctly map row->y and col->x.
+     */
     public static int[][] merge(int[][] filledFields, int[][] brick, int x, int y) {
         int[][] copy = copy(filledFields);
-        for (int i = 0; i < brick.length; i++) {
-            for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                if (brick[j][i] != 0) {
-                    copy[targetY][targetX] = brick[j][i];
+        for (int row = 0; row < brick.length; row++) {
+            for (int col = 0; col < brick[row].length; col++) {
+                if (brick[row][col] != 0) {
+                    int targetX = x + col;
+                    int targetY = y + row;
+                    // Safety check to prevent crashing if a glitched piece is partly out of bounds
+                    if (targetY >= 0 && targetY < copy.length && targetX >= 0 && targetX < copy[0].length) {
+                        copy[targetY][targetX] = brick[row][col];
+                    }
                 }
             }
         }
@@ -88,12 +100,11 @@ public class MatrixUtils {
                 break;
             }
         }
-        int scoreBonus = 50 * clearedRows.size() * clearedRows.size();
-        return new ClearRow(clearedRows.size(), tmp, scoreBonus);
+
+        return new ClearRow(clearedRows.size(), tmp);
     }
 
     public static List<int[][]> deepCopyList(List<int[][]> list){
         return list.stream().map(MatrixUtils::copy).collect(Collectors.toList());
     }
-
 }
