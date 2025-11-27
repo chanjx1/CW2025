@@ -168,12 +168,15 @@ public class GameController implements InputEventListener {
                 && downData.getClearRow().getLinesRemoved() > 0) {
 
             int linesRemoved = downData.getClearRow().getLinesRemoved();
+            int currentLevel = board.getScore().levelProperty().get(); // Get Level
 
-            // 1. Calculate Score Bonus
-            int bonus = ScoringRules.lineClearBonus(linesRemoved);
+            // 1. Calculate Score Bonus using Level Multiplier
+            // UPDATE: Pass currentLevel to the rules
+            int bonus = ScoringRules.lineClearBonus(linesRemoved, currentLevel);
+
             board.getScore().addScore(bonus);
 
-            // Check level BEFORE adding lines to see if we level up
+            // 2. Update Lines and Level
             int oldLevel = board.getScore().levelProperty().get();
             board.getScore().addLines(linesRemoved);
             int newLevel = board.getScore().levelProperty().get();

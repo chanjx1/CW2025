@@ -7,13 +7,16 @@ public class ScoringRules {
     }
 
     /**
-     * Bonus for clearing lines in one move.
-     * Currently: 50 * linesRemoved^2
+     * Bonus for clearing lines.
+     * Formula: (50 * lines^2) * currentLevel
+     * Example: Clearing 4 lines (Tetris) at Level 1 = 800 pts.
+     * Clearing 4 lines at Level 10 = 8000 pts.
      */
-    public static int lineClearBonus(int linesRemoved) {
+    public static int lineClearBonus(int linesRemoved, int currentLevel) {
         if (linesRemoved <= 0) {
             return 0;
         }
-        return 50 * linesRemoved * linesRemoved;
+        int baseScore = 50 * linesRemoved * linesRemoved;
+        return baseScore * currentLevel;
     }
 }

@@ -46,6 +46,13 @@
             </VBox>
 
             <VBox alignment="CENTER" spacing="5">
+                <Label text="LEVEL" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="levelLabel" text="1" styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
+
+            <VBox alignment="CENTER" spacing="5">
                 <Label text="SCORE" styleClass="nextBrickLabel"/>
                 <StackPane styleClass="ipad-dark-grey">
                     <Label fx:id="scoreLabel"
