@@ -29,7 +29,7 @@ public class GameController implements InputEventListener {
         viewGuiController.setHighScore(scoreManager.getHighScore());
 
         // NEW: Bind Score AND Level
-        viewGuiController.bindGameStats(board.getScore().scoreProperty(), board.getScore().levelProperty());
+        viewGuiController.bindGameStats(board.getScore().scoreProperty(), board.getScore().levelProperty(), board.getScore().linesProperty());
 
         if (board instanceof TetrisBoard) {
             viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());

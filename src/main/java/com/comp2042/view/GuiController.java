@@ -55,6 +55,7 @@ public class GuiController implements Initializable {
     @FXML private Label highScoreLabel;
     @FXML private VBox pauseMenu;
     @FXML private Label levelLabel;
+    @FXML private Label linesLabel;
 
     private Timeline timeLine;
     private InputEventListener eventListener;
@@ -171,7 +172,7 @@ public class GuiController implements Initializable {
         this.boardRenderer.setEventListener(eventListener);
     }
 
-    public void bindGameStats(IntegerProperty scoreProp, IntegerProperty levelProp) {
+    public void bindGameStats(IntegerProperty scoreProp, IntegerProperty levelProp, IntegerProperty linesProp) {
         // Bind Score Label
         if (scoreLabel != null) {
             scoreLabel.textProperty().bind(scoreProp.asString("Score: %05d"));
@@ -179,6 +180,10 @@ public class GuiController implements Initializable {
 
         if (levelLabel != null) {
             levelLabel.textProperty().bind(levelProp.asString("%d"));
+        }
+
+        if (linesLabel != null) {
+            linesLabel.textProperty().bind(linesProp.asString("%d"));
         }
 
         // Listen for Level changes to adjust speed
