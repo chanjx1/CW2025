@@ -3,11 +3,15 @@
 ## Github
 https://github.com/chanjx1/CW2025
 
+
+
 ## Compilation Instructions
 1. Ensure Java JDK (version 21 or later) and Maven are installed.
 2. Clone the repository.
 3. Run `mvn clean compile`
 4. Start the game with `mvn javafx:run`
+
+
 
 ## Refactoring Summary (What Was Improved)
 This project underwent extensive refactoring and cleanup to improve readability, maintainability, and program structure. All Refactoring work is fully functional and tested.
@@ -50,71 +54,94 @@ Added tests under `src/test/java/com/comp2042/model/`:
 - **Pause Behavior**: Fixed pause logic so the game actually freezes the timeline and resumes correctly.
 - **Layout**: Fixed broken board centering in FXML and tidied styling via CSS.
 
+
+
 ## Implemented and Working Properly
 1. **Complete MVC Refactoring**: Strict separation of concerns achieved by extracting rendering logic to `BoardRenderer` and audio logic to `SoundManager`.
-2. **Dynamic Leveling System**: Implemented adaptive difficulty; game speed increases every 10 lines cleared.
-3. **Audio System**: Integrated sound effects for Line Clears, Level Ups, and Game Over states.
-4. **Advanced Gameplay Mechanics**:
-    - **Ghost Piece**: Visual projection showing where the active block will land.
-    - **Hard Drop**: Pressing `SPACE` instantly drops and locks the piece.
-    - **Hold Mechanic**: Pressing `SHIFT` or `C` swaps the active piece with a held piece.
-5. **Code Optimization**:
+2. **Code Optimization**:
     - Removed duplication across all Tetromino classes using `AbstractBrick`.
     - Removed legacy `java.awt` dependencies by implementing a lightweight `GamePoint` record.
-6. **UI & Layout**:
-    - Centered game board with corrected `StackPane` overlays.
-    - Live HUD showing Score, Level, and Next/Hold pieces.
-    - Notification system for "Level Up" and bonuses that stack dynamically without overlapping.
-7. **Input & State Management**:
-    - Centralised input handling for Keyboard (Arrows/WASD) and Game State (Running/Paused/GameOver).
-    - Pause and Resume functionality via the `P` key.
-8. **Critical Bug Fixes**:
+3. **Advanced Gameplay Mechanics**:
+   - **Bag-7 Randomizer**: Implemented a fair random generator that ensures every sequence of 7 pieces contains one of each Tetromino type, preventing piece droughts.
+   - **Dynamic Leveling**: Game speed increases every 10 lines; score multiplier scales with the current level.
+   - **Hold Mechanic**: Pressing `SHIFT` or `C` swaps the active piece with a held piece.
+   - **Ghost Piece**: Visual projection showing where the active block will land.
+   - **Hard Drop**: Pressing `SPACE` instantly drops and locks the piece.
+4. **Persistent High Scores**:
+    - The game saves the top score to a local file (`highscore.dat`).
+    - High scores persist between game sessions and are displayed on the Main Menu and HUD.
+5. **User Interface & Menus**:
+    - **Main Menu**: A dedicated start screen with options for New Game, High Scores, Controls, and Exit.
+    - **In-Game Pause**: A darker overlay menu (triggered by `P` or `ESC`) allows resuming or returning to the main menu.
+    - **Controls Screen**: A popup guide listing all keyboard bindings.
+    - **Live HUD**: Displays Score, High Score (Best), Current Level, and Next Piece preview.
+6. **Audio System**: Integrated sound effects for Line Clears, Level Ups, and Game Over states.
+7. **Critical Bug Fixes**:
     - Fixed `MatrixUtils` logic where X/Y coordinates were transposed.
     - Fixed piece spawning coordinates to correctly use hidden rows.
+    - Fixed UI layout jitter by enforcing fixed-width score formatting.
+
+
 
 ## Implemented but Not Working Properly
 * None. All intended refactoring features were tested and are functioning correctly.
 
+
+
 ## Features Not Implemented
-- Bag-7 randomizer
-- High score saving
+- Smoother animations
+
+
 
 ## New Java Classes Introduced
-| Class         | Purpose                                                               |
-|---------------|-----------------------------------------------------------------------|
-| SoundManager  | Facade for loading resources and playing sound effects (.mp3/.wav).   |
-| BoardRenderer | Handles JavaFX grid generation and updates rectangle positions.       |
-| BrickStyler   | "Contains visual design logic (colors, strokes) for blocks."          |
-| GamePoint     | An immutable record replacing java.awt.Point for coordinate tracking. |
-| ScoringRules  | Pure logic class for calculating points based on lines cleared.       |
-| AbstractBrick | Parent class reducing code duplication in Tetromino definitions.      |
+| Class | Purpose |
+| :--- | :--- |
+| **`SoundManager`** | Facade for loading resources and playing sound effects (`.mp3`/`.wav`). |
+| **`ScoreManager`** | Handles File I/O to save and load the highest score from `highscore.dat`. |
+| **`MenuController`** | Manages the Main Menu scene, including navigation to the game, alerts, and exit logic. |
+| **`Bag7BrickGenerator`** | Implements the "7-Bag" strategy to ensure fair piece distribution (replacing random generation). |
+| **`BoardRenderer`** | Handles JavaFX grid generation, ghost piece rendering, and next/hold styling. |
+| **`BrickStyler`** | Contains visual design logic (colors, strokes) for blocks. |
+| **`GamePoint`** | An immutable record replacing `java.awt.Point` for coordinate tracking. |
+| **`ScoringRules`** | Pure logic class for calculating points based on lines cleared and current level. |
+| **`AbstractBrick`** | Parent class reducing code duplication in Tetromino definitions. |
 
 ## Modified Java Classes
 #### GuiController.java
-- **Refactoring**: Delegated all grid rendering to `BoardRenderer` and block styling to `BrickStyler` to satisfy Single Responsibility Principle.
-- **Key Handling**: Centralised keyboard input events (Arrow keys, WASD, Pause).
-- **UI Logic**: Implemented `showScoreBonus` with relative positioning to prevent overlapping notifications.
-- **Cleanup**: Improved overlay creation and focus management.
+- **Menu Logic**: Added `togglePauseMenu()` to handle in-game pausing and scene switching back to the Main Menu.
+- **UI Binding**: Binds the new "Level" and "Next Piece" views to the model.
+- **Refactoring**: Delegated all grid rendering to `BoardRenderer` and styling to `BrickStyler`.
+
 #### GameController.java
-- **MVC Separation**: Moved all game logic out of the GUI; now handles game rules, scoring, and state management.
+- **High Scores**: Integrated `ScoreManager` to check and save new records upon Game Over.
 - **Audio Integration**: Integrated `SoundManager` to trigger effects for Game Over, Level Up, and Line Clears.
-- **Logic**: Centralised scoring logic (including soft/hard drop points) and handles dynamic Level Up progression.
+- **Leveling**: Updates the scoring engine to use level-based multipliers.
+- **MVC Separation**: Centralized all game rules, state management, and audio triggers.
+
 #### TetrisBoard.java
 - **Renaming**: Renamed from `SimpleBoard` to `TetrisBoard`.
-- **Decoupling**: Replaced `java.awt.Point` with `GamePoint` to remove AWT dependencies from the Model.
-- **Physics**: Removed scoring side-effects to ensure the class functions purely as a physics/collision engine.
+- **Strategy Swap**: Replaced `RandomBrickGenerator` with `Bag7BrickGenerator` for fairer gameplay.
+- **Decoupling**: Replaced `java.awt.Point` with `GamePoint`.
+- **Physics**: Removed scoring side-effects to ensure the class functions purely as a physics engine.
 - **State**: Manages board constants, hidden rows, and spawn coordinates.
+
+#### ScoringRules.java
+- **Scaling**: Updated logic to accept `currentLevel` as a parameter, scaling points higher as the game gets faster.
+
 #### MatrixUtils.java
 - **Renaming**: Renamed from `MatrixOperations`.
 - **Bug Fix**: Fixed a critical logic error in `intersect` and `merge` methods where X and Y coordinates were transposed.
 - **Utility**: Provides helper methods for deep-copying matrices and row-clearing checks.
+
 #### Score.java
 - **Extension**: Added `level` and `lines` properties to support the dynamic difficulty system.
 - **Binding**: Uses JavaFX properties to allow the UI to observe changes automatically.
+- 
 #### gameLayout.fxml
-- **Layout**: Rebuilt using `StackPane` overlay structure to support background, board, and ghost pieces.
-- **Centering**: Fixed alignment issues to ensure the board is centered.
-- **Cleanup**: Removed unused imports and redundant nodes.
+- **Overlays**: Added a `VBox` overlay for the Pause Menu.
+- **HUD**: Added containers for "NEXT" piece and "LEVEL" display.
+- **Layout**: Fixed alignment issues to ensure the board and sidebars are centered correctly.
+- 
 #### Brick Classes (TBrick, LBrick, etc.)
 - **Refactoring**: All bricks now extend `AbstractBrick`.
 - **Cleanup**: Removed code duplication; classes now contain only their specific rotation data.
