@@ -11,20 +11,21 @@ public class SoundManager {
 
     public SoundManager() {
         // Pre-load sounds to avoid lag during gameplay
-        loadSound("clear", "sounds/clear.mp3");
-        loadSound("levelup", "sounds/levelup.mp3");
-        loadSound("gameover", "sounds/gameover.mp3");
+        loadSound("clear", "sounds/clear.wav");
+        loadSound("levelup", "sounds/levelup.wav");
+        loadSound("gameover", "sounds/gameover.wav");
     }
 
     private void loadSound(String name, String path) {
         URL resource = getClass().getClassLoader().getResource(path);
         if (resource != null) {
-            soundEffects.put(name, new AudioClip(resource.toExternalForm()));
+            AudioClip clip = new AudioClip(resource.toExternalForm());
+            clip.play(0.0);
+            soundEffects.put(name, clip);
         } else {
             System.err.println("Warning: Sound file not found: " + path);
         }
     }
-
     public void playClearLine() {
         playSound("clear");
     }
