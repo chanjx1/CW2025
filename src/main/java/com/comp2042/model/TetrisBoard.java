@@ -6,9 +6,17 @@ import com.comp2042.model.bricks.BrickRotator;
 import com.comp2042.model.bricks.RandomBrickGenerator;
 import com.comp2042.model.bricks.Bag7BrickGenerator;
 
+/**
+ * Represents the game board logic and physics engine.
+ * <p>
+ * This class manages the state of the 2D grid, collision detection, brick movement,
+ * and the spawn mechanics. It implements the {@link Board} interface.
+ * </p>
+ * The board uses a coordinate system where (0,0) is the top-left corner.
+ * It includes hidden rows at the top for smooth brick spawning.
+ */
 public class TetrisBoard implements Board {
 
-    // ... (Fields and Constructor remain the same) ...
     private final int width;
     private final int height;
     private final BrickGenerator brickGenerator;
@@ -34,7 +42,6 @@ public class TetrisBoard implements Board {
         score = new Score();
     }
 
-    // ... (Movement methods: moveBrickDown, left, right, rotate, createNewBrick, getters... KEEP AS IS) ...
     @Override public boolean moveBrickDown() {
         int[][] currentMatrix = MatrixUtils.copy(currentGameMatrix);
         GamePoint p = currentOffset.translate(0, 1);
@@ -59,6 +66,14 @@ public class TetrisBoard implements Board {
         boolean conflict = MatrixUtils.intersect(currentMatrix, nextShape.getShape(), currentOffset.x(), currentOffset.y());
         if (conflict) { return false; } else { brickRotator.setCurrentShape(nextShape.getPosition()); return true; }
     }
+    /**
+     * Spawns a new active brick at the top of the board.
+     * <p>
+     * Uses the {@link BrickGenerator} to fetch the next shape and resets the spawn position.
+     * </p>
+     *
+     * @return true if the new brick immediately collides with existing blocks (Game Over condition).
+     */
     @Override public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
@@ -87,8 +102,17 @@ public class TetrisBoard implements Board {
     }
     @Override public int[][] getHoldBrickShape() { if (holdBrick == null) return null; return holdBrick.getShapeMatrix().get(0); }
 
-    // --- MODIFIED METHODS BELOW ---
-
+    /**
+     * Advances the game state by one step (gravity).
+     * <p>
+     * Attempts to move the active brick down by one row. If movement is blocked,
+     * the brick is merged into the background grid, rows are checked for clearing,
+     * and a new brick is spawned.
+     * </p>
+     *
+     * @param awardSoftDropScore Unused in this implementation (scoring is handled by Controller).
+     * @return A {@link DownData} object containing the clear-row result and game-over status.
+     */
     @Override
     public DownData stepDown(boolean awardSoftDropScore) {
         boolean canMove = moveBrickDown();
@@ -98,13 +122,11 @@ public class TetrisBoard implements Board {
         if (!canMove) {
             mergeBrickToBackground();
             clearRow = clearRows();
-            // REMOVED: score calculation logic (moved to Controller)
 
             if (createNewBrick()) {
                 gameOver = true;
             }
         }
-        // REMOVED: Soft drop score logic (moved to Controller)
 
         return new DownData(clearRow, getViewData(), gameOver);
     }
@@ -116,12 +138,10 @@ public class TetrisBoard implements Board {
         boolean canMove;
         do {
             canMove = moveBrickDown();
-            // REMOVED: Soft drop score logic loop
         } while (canMove);
 
         mergeBrickToBackground();
         clearRow = clearRows();
-        // REMOVED: score calculation logic
 
         gameOver = createNewBrick();
 

@@ -8,9 +8,11 @@ import java.util.List;
 
 /**
  * Implements the "7-Bag" Random Generator system.
- * This guarantees that the player receives one of every tetromino type
- * (I, J, L, O, S, T, Z) in a random order before the set repeats.
- * This prevents long droughts of specific pieces.
+ * <p>
+ * This strategy guarantees that the player receives a sequence containing exactly
+ * one of every tetromino type (I, J, L, O, S, T, Z) in a random order before the set repeats.
+ * This prevents long droughts of specific pieces (e.g., waiting forever for an I-piece).
+ * </p>
  */
 public class Bag7BrickGenerator implements BrickGenerator {
 

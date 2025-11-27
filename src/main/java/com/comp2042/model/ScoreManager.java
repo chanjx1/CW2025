@@ -5,6 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Manages data persistence for high scores.
+ * <p>
+ * This class handles reading from and writing to the local 'highscore.dat' file.
+ * It provides a simple API to save new records and retrieve the current best score.
+ * </p>
+ */
 public class ScoreManager {
 
     private static final String FILE_NAME = "highscore.dat";

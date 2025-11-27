@@ -8,6 +8,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+/**
+ * Responsible for rendering the game state onto the JavaFX scene.
+ * <p>
+ * This class manages the grid of rectangles that represent the background,
+ * the active falling piece, the ghost piece projection, and the preview panels.
+ * </p>
+ */
 public class BoardRenderer {
 
     private static final int BRICK_SIZE = 20;
@@ -41,6 +48,15 @@ public class BoardRenderer {
 
     /**
      * Helper method to initialize a grid of rectangles in a given Pane.
+     * <p>
+     * Creates a 2D array of transparent rectangles and adds them to the scene graph.
+     * This method is used to initialize the Ghost, Active, Hold, and Next grids efficiently.
+     * </p>
+     *
+     * @param pane The parent container for the rectangles.
+     * @param rows Number of rows in the grid.
+     * @param cols Number of columns in the grid.
+     * @return A 2D array of the created Rectangle objects.
      */
     private Rectangle[][] createGrid(Pane pane, int rows, int cols) {
         Rectangle[][] grid = new Rectangle[rows][cols];
@@ -117,7 +133,16 @@ public class BoardRenderer {
     }
 
     /**
-     * Generic helper to render a shape perfectly centered in a pane using pixel coordinates.
+     * Renders a tetromino shape centered within a preview pane.
+     * <p>
+     * Calculates the pixel-perfect center based on the shape's bounding box width/height
+     * and the pane's dimensions, ensuring visual alignment for odd-width pieces.
+     * </p>
+     *
+     * @param targetGrid The grid of rectangles to use for rendering.
+     * @param shape The 2D array representing the shape to draw.
+     * @param paneWidth The width of the container pane.
+     * @param paneHeight The height of the container pane.
      */
     private void renderCentered(Rectangle[][] targetGrid, int[][] shape, double paneWidth, double paneHeight) {
         // 1. Clear all cells first
