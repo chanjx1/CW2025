@@ -4,6 +4,7 @@ import com.comp2042.model.bricks.Brick;
 import com.comp2042.model.bricks.BrickGenerator;
 import com.comp2042.model.bricks.BrickRotator;
 import com.comp2042.model.bricks.RandomBrickGenerator;
+import com.comp2042.model.bricks.Bag7BrickGenerator;
 
 public class TetrisBoard implements Board {
 
@@ -28,7 +29,7 @@ public class TetrisBoard implements Board {
         this.width = width;
         this.height = height;
         currentGameMatrix = new int[width][height];
-        brickGenerator = new RandomBrickGenerator();
+        brickGenerator = new Bag7BrickGenerator();
         brickRotator = new BrickRotator();
         score = new Score();
     }
