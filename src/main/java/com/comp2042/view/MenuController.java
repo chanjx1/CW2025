@@ -48,6 +48,32 @@ public class MenuController {
     }
 
     @FXML
+    public void onControls(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Controls");
+        alert.setHeaderText("Keyboard Controls");
+
+        String content = """
+            Movement:
+            ← / A  : Move Left
+            → / D  : Move Right
+            ↓ / S  : Soft Drop
+            
+            Actions:
+            ↑ / W  : Rotate
+            SPACE  : Hard Drop
+            SHIFT / C : Hold Piece
+            
+            Game:
+            P / ESC : Pause & Menu
+            N       : New Game
+            """;
+
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    @FXML
     public void onExit(ActionEvent event) {
         System.exit(0);
     }

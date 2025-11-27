@@ -18,6 +18,9 @@
         <Button text="HIGH SCORES" onAction="#onHighScores"
                 styleClass="ipad-dark-grey" prefWidth="250"/>
 
+        <Button text="CONTROLS" onAction="#onControls"
+                styleClass="ipad-dark-grey" prefWidth="250"/>
+
         <Button text="EXIT" onAction="#onExit"
                 styleClass="ipad-dark-grey" prefWidth="250"/>
     </VBox>
