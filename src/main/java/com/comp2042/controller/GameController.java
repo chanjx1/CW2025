@@ -34,9 +34,6 @@ public class GameController implements InputEventListener {
         if (board instanceof TetrisBoard) {
             viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
         }
-
-        // Show the high score immediately on startup (Optional: requires a label in UI)
-        System.out.println("Current High Score: " + scoreManager.getHighScore());
     }
 
     /**
