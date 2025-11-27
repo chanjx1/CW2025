@@ -17,12 +17,16 @@ public class GameController implements InputEventListener {
 
     private final GuiController viewGuiController;
     private final SoundManager soundManager;
+    private final ScoreManager scoreManager;
 
     public GameController(GuiController c) {
         viewGuiController = c;
+        this.soundManager = new SoundManager();
+        this.scoreManager = new ScoreManager();
         board.createNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
+        viewGuiController.setHighScore(scoreManager.getHighScore());
 
         // NEW: Bind Score AND Level
         viewGuiController.bindGameStats(board.getScore().scoreProperty(), board.getScore().levelProperty());
@@ -31,7 +35,8 @@ public class GameController implements InputEventListener {
             viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
         }
 
-        this.soundManager = new SoundManager();
+        // Show the high score immediately on startup (Optional: requires a label in UI)
+        System.out.println("Current High Score: " + scoreManager.getHighScore());
     }
 
     /**
@@ -56,6 +61,7 @@ public class GameController implements InputEventListener {
         if (downData.isGameOver()) {
             viewGuiController.gameOver();
             soundManager.playGameOver();
+            handleGameOver();
         }
         handleClearRow(downData);
         return downData;
@@ -75,6 +81,7 @@ public class GameController implements InputEventListener {
         if (downData.isGameOver()) {
             viewGuiController.gameOver();
             soundManager.playGameOver();
+            handleGameOver();
         }
         handleClearRow(downData);
         return downData;
@@ -103,6 +110,7 @@ public class GameController implements InputEventListener {
     public void createNewGame() {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        viewGuiController.setHighScore(scoreManager.getHighScore());
     }
 
     /**
@@ -194,9 +202,24 @@ public class GameController implements InputEventListener {
         if (gameOver) {
             viewGuiController.gameOver();
             soundManager.playGameOver();
+            handleGameOver();
         }
 
         // active piece has changed (new or swapped), so return its view
         return board.getViewData();
+    }
+
+    // Helper method to handle game over logic centrally
+    private void handleGameOver() {
+        viewGuiController.gameOver();
+        soundManager.playGameOver();
+
+        // NEW: Check and Save High Score
+        int currentScore = board.getScore().scoreProperty().get();
+        if (scoreManager.isNewHighScore(currentScore)) {
+            scoreManager.saveHighScore(currentScore);
+            viewGuiController.showScoreBonus("NEW HIGH SCORE!");
+            viewGuiController.setHighScore(scoreManager.getHighScore());
+        }
     }
 }

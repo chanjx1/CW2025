@@ -43,6 +43,7 @@ public class GuiController implements Initializable {
     @FXML private GameOverPanel gameOverPanel;
     @FXML private Label scoreLabel;
     @FXML private Pane holdPane;
+    @FXML private Label highScoreLabel;
 
     private Timeline timeLine;
     private InputEventListener eventListener;
@@ -228,5 +229,11 @@ public class GuiController implements Initializable {
 
     public void showHoldPiece(int[][] shape) {
         boardRenderer.showHoldPiece(shape);
+    }
+
+    public void setHighScore(int score) {
+        if (highScoreLabel != null) {
+            highScoreLabel.setText(String.valueOf(score));
+        }
     }
 }
