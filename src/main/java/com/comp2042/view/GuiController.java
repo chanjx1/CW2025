@@ -22,6 +22,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
+import javafx.stage.Stage;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import java.io.IOException;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -43,6 +51,11 @@ public class GuiController implements Initializable {
     @FXML private GameOverPanel gameOverPanel;
     @FXML private Label scoreLabel;
     @FXML private Pane holdPane;
+    @FXML private Pane nextBrickPane;
+    @FXML private Label highScoreLabel;
+    @FXML private VBox pauseMenu;
+    @FXML private Label levelLabel;
+    @FXML private Label linesLabel;
 
     private Timeline timeLine;
     private InputEventListener eventListener;
@@ -65,20 +78,20 @@ public class GuiController implements Initializable {
         reflection.setTopOffset(-12);
 
         // Initialize the renderer
-        this.boardRenderer = new BoardRenderer(gamePanel, brickOverlay, holdPane);
+        this.boardRenderer = new BoardRenderer(gamePanel, brickOverlay, holdPane, nextBrickPane);
     }
 
     private void handleKeyPressed(KeyEvent keyEvent) {
         KeyCode code = keyEvent.getCode();
 
-        if (code == KeyCode.N) {
-            newGame(null);
+        if (code == KeyCode.ESCAPE || code == KeyCode.P) {
+            togglePauseMenu();
             keyEvent.consume();
             return;
         }
 
-        if (code == KeyCode.P) {
-            pauseGame(null);
+        if (code == KeyCode.N) {
+            newGame(null);
             keyEvent.consume();
             return;
         }
@@ -130,6 +143,7 @@ public class GuiController implements Initializable {
     private void refreshBrick(ViewData brick) {
         if (gameState.get() == GameState.RUNNING) {
             boardRenderer.updateBrickPosition(brick);
+            boardRenderer.showNextPiece(brick.getNextBrickData());
         }
     }
 
@@ -158,10 +172,36 @@ public class GuiController implements Initializable {
         this.boardRenderer.setEventListener(eventListener);
     }
 
-    public void bindScore(IntegerProperty scoreProperty) {
+    public void bindGameStats(IntegerProperty scoreProp, IntegerProperty levelProp, IntegerProperty linesProp) {
+        // Bind Score Label
         if (scoreLabel != null) {
-            scoreLabel.textProperty().bind(scoreProperty.asString("Score: %d"));
+            scoreLabel.textProperty().bind(scoreProp.asString("Score: %05d"));
         }
+
+        if (levelLabel != null) {
+            levelLabel.textProperty().bind(levelProp.asString("%d"));
+        }
+
+        if (linesLabel != null) {
+            linesLabel.textProperty().bind(linesProp.asString("%d"));
+        }
+
+        // Listen for Level changes to adjust speed
+        levelProp.addListener((obs, oldVal, newVal) -> {
+            int level = newVal.intValue();
+            // Speed formula: Base 400ms, decreases by 50ms per level, capped at 100ms
+            double delay = Math.max(100, 400 - ((level - 1) * 50));
+
+            timeLine.stop();
+            timeLine.getKeyFrames().setAll(new KeyFrame(
+                    Duration.millis(delay),
+                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            ));
+            timeLine.play();
+
+            // Optional: Show a "LEVEL UP" notification
+            showScoreBonus("LEVEL " + level);
+        });
     }
 
     public void gameOver() {
@@ -194,13 +234,61 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
     }
 
-    public void showScoreBonus(int bonus) {
-        NotificationPanel notificationPanel = new NotificationPanel("+" + bonus);
+    public void showScoreBonus(String text) {
+        NotificationPanel notificationPanel = new NotificationPanel(text);
+
+        // FIX: Offset Y position if other notifications are already active
+        // Each existing notification pushes the new one down by 25 pixels
+        int activeNotifications = groupNotification.getChildren().size();
+        double yOffset = activeNotifications * 25;
+
+        notificationPanel.setTranslateY(yOffset);
+
         groupNotification.getChildren().add(notificationPanel);
         notificationPanel.showScore(groupNotification.getChildren());
     }
 
     public void showHoldPiece(int[][] shape) {
         boardRenderer.showHoldPiece(shape);
+    }
+
+    public void setHighScore(int score) {
+        if (highScoreLabel != null) {
+            highScoreLabel.setText(String.valueOf(score));
+        }
+    }
+
+    public void togglePauseMenu() {
+        if (pauseMenu.isVisible()) {
+            // Hide menu -> Resume game
+            pauseMenu.setVisible(false);
+            if (gameState.get() == GameState.PAUSED) {
+                timeLine.play();
+                gameState.set(GameState.RUNNING);
+            }
+            gamePanel.requestFocus(); // Return focus to the board
+        } else {
+            // Show menu -> Pause game
+            pauseMenu.setVisible(true);
+            if (gameState.get() == GameState.RUNNING) {
+                timeLine.stop();
+                gameState.set(GameState.PAUSED);
+            }
+        }
+    }
+
+    public void onResume(ActionEvent event) {
+        togglePauseMenu();
+    }
+
+    public void onExitToMenu(ActionEvent event) throws IOException {
+        timeLine.stop(); // Ensure game loop is dead
+
+        URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
+        Parent root = FXMLLoader.load(location);
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root, 800, 600);
+        stage.setScene(scene);
+        stage.show();
     }
 }

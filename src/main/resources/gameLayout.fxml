@@ -4,6 +4,7 @@
 <?import java.net.URL?>
 <?import com.comp2042.view.GameOverPanel?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.comp2042.view.GuiController">
@@ -11,21 +12,37 @@
     <!-- Dim full-window background grid -->
     <GridPane fx:id="brickPanel" hgap="1" vgap="1" />
 
-    <!-- Main layout:  HOLD  |  BOARD  |  SCORE  -->
     <HBox alignment="CENTER" spacing="40">
-        <!-- LEFT: HOLD panel -->
+
         <VBox StackPane.alignment="TOP_LEFT"
-              spacing="5"
+              spacing="20"
               translateX="20"
               translateY="20">
-            <Label text="HOLD" styleClass="holdBrickLabel"/>
-            <Pane fx:id="holdPane"
-                  prefWidth="80" prefHeight="80"
-                  styleClass="nextBrick"/>
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="HOLD" styleClass="holdBrickLabel"/>
+                <Pane fx:id="holdPane"
+                      prefWidth="80" prefHeight="80"
+                      maxWidth="80" maxHeight="80"
+                      styleClass="nextBrick"/>
+            </VBox>
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="LEVEL" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="levelLabel" text="1" styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="LINES" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="linesLabel" text="0" styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
         </VBox>
 
 
-        <!-- CENTER: game board -->
         <StackPane alignment="CENTER"
                    maxWidth="150" maxHeight="400"
                    prefWidth="150" prefHeight="400"
@@ -34,14 +51,32 @@
             <Pane fx:id="brickOverlay" pickOnBounds="false" />
         </StackPane>
 
-        <!-- RIGHT: score panel -->
-        <VBox alignment="TOP_CENTER" spacing="8">
-            <Label text="SCORE" styleClass="nextBrickLabel"/>
-            <StackPane styleClass="ipad-dark-grey">
-                <Label fx:id="scoreLabel"
-                       text="Score: 0"
-                       styleClass="scoreClass" />
-            </StackPane>
+
+        <VBox alignment="TOP_CENTER" spacing="20">
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="NEXT" styleClass="nextBrickLabel"/>
+                <Pane fx:id="nextBrickPane"
+                      prefWidth="80" prefHeight="80"
+                      maxWidth="80" maxHeight="80"
+                      styleClass="nextBrick"/>
+            </VBox>
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="SCORE" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="scoreLabel"
+                           text="Score: 0"
+                           styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="BEST" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="highScoreLabel" text="0" styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
         </VBox>
     </HBox>
 
@@ -51,6 +86,18 @@
             <GameOverPanel fx:id="gameOverPanel" />
         </VBox>
     </Group>
+
+    <VBox fx:id="pauseMenu" alignment="CENTER" spacing="20" visible="false"
+          style="-fx-background-color: rgba(0, 0, 0, 0.75);">
+        <Label text="PAUSED"
+               styleClass="pauseTitle"/>
+
+        <Button text="RESUME" onAction="#onResume"
+                styleClass="ipad-dark-grey" prefWidth="200"/>
+
+        <Button text="MAIN MENU" onAction="#onExitToMenu"
+                styleClass="ipad-dark-grey" prefWidth="200"/>
+    </VBox>
 
     <stylesheets>
         <URL value="@window_style.css"/>

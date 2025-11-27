@@ -4,6 +4,7 @@ import com.comp2042.controller.event.EventSource;
 import com.comp2042.controller.event.MoveEvent;
 import com.comp2042.model.*;
 import com.comp2042.view.GuiController;
+import com.comp2042.view.SoundManager;
 
 /**
  * GameController acts as the "C" in MVC.
@@ -15,18 +16,27 @@ public class GameController implements InputEventListener {
     private Board board = new TetrisBoard(TetrisBoard.BOARD_HEIGHT, TetrisBoard.BOARD_WIDTH);
 
     private final GuiController viewGuiController;
+    private final SoundManager soundManager;
+    private final ScoreManager scoreManager;
 
     public GameController(GuiController c) {
         viewGuiController = c;
+        this.soundManager = new SoundManager();
+        this.scoreManager = new ScoreManager();
         board.createNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
-        viewGuiController.bindScore(board.getScore().scoreProperty());
+        viewGuiController.setHighScore(scoreManager.getHighScore());
 
-        // initialise HOLD box as empty
+        // NEW: Bind Score AND Level
+        viewGuiController.bindGameStats(board.getScore().scoreProperty(), board.getScore().levelProperty(), board.getScore().linesProperty());
+
         if (board instanceof TetrisBoard) {
             viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
         }
+
+        // Show the high score immediately on startup (Optional: requires a label in UI)
+        System.out.println("Current High Score: " + scoreManager.getHighScore());
     }
 
     /**
@@ -39,36 +49,41 @@ public class GameController implements InputEventListener {
     @Override
     public DownData onDownEvent(MoveEvent event) {
         boolean fromUser = event.getEventSource() == EventSource.USER;
-
         DownData downData = board.stepDown(fromUser);
 
-        // Update background after any change to the board
-        viewGuiController.refreshGameBackground(board.getBoardMatrix());
-
-        // If a new brick spawned and instantly collided, the board reports game over
-        if (downData.isGameOver()) {
-            viewGuiController.gameOver();
+        // NEW: Manually add score for soft drop if user pressed down and piece moved (no collision yet)
+        if (fromUser && downData.getClearRow() == null && !downData.isGameOver()) {
+            board.getScore().addScore(1);
         }
 
-        // Handle line-clear visual effects (bonus popup)
-        handleClearRow(downData);
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
+        if (downData.isGameOver()) {
+            viewGuiController.gameOver();
+            soundManager.playGameOver();
+            handleGameOver();
+        }
+        handleClearRow(downData);
         return downData;
     }
 
+    // For hard drop, we can just give a fixed bonus for simplicity
     public DownData onHardDropEvent(MoveEvent event) {
         boolean fromUser = event.getEventSource() == EventSource.USER;
-
         DownData downData = board.hardDrop(fromUser);
 
-        viewGuiController.refreshGameBackground(board.getBoardMatrix());
-
-        if (downData.isGameOver()) {
-            viewGuiController.gameOver();
+        // Fixed bonus for hard drop (since we don't calculate exact rows anymore)
+        if (fromUser) {
+            board.getScore().addScore(20);
         }
 
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        if (downData.isGameOver()) {
+            viewGuiController.gameOver();
+            soundManager.playGameOver();
+            handleGameOver();
+        }
         handleClearRow(downData);
-
         return downData;
     }
 
@@ -95,6 +110,7 @@ public class GameController implements InputEventListener {
     public void createNewGame() {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        viewGuiController.setHighScore(scoreManager.getHighScore());
     }
 
     /**
@@ -145,18 +161,34 @@ public class GameController implements InputEventListener {
     }
 
     /**
-     * Applies visual feedback for cleared rows.
-     * The controller interprets the DownData (model-level information)
-     * and then asks the view to show the score bonus. This keeps the GUI
-     * free from game-logic decisions.
+     * Applies visual feedback and updates score/level for cleared rows.
      */
     private void handleClearRow(DownData downData) {
         if (downData.getClearRow() != null
                 && downData.getClearRow().getLinesRemoved() > 0) {
-            int bonus = ScoringRules.lineClearBonus(
-                    downData.getClearRow().getLinesRemoved()
-            );
-            viewGuiController.showScoreBonus(bonus);
+
+            int linesRemoved = downData.getClearRow().getLinesRemoved();
+            int currentLevel = board.getScore().levelProperty().get(); // Get Level
+
+            // 1. Calculate Score Bonus using Level Multiplier
+            // UPDATE: Pass currentLevel to the rules
+            int bonus = ScoringRules.lineClearBonus(linesRemoved, currentLevel);
+
+            board.getScore().addScore(bonus);
+
+            // 2. Update Lines and Level
+            int oldLevel = board.getScore().levelProperty().get();
+            board.getScore().addLines(linesRemoved);
+            int newLevel = board.getScore().levelProperty().get();
+
+            // 3. Audio & Visuals
+            if (newLevel > oldLevel) {
+                soundManager.playLevelUp();
+                viewGuiController.showScoreBonus("LEVEL " + newLevel);
+            } else {
+                soundManager.playClearLine();
+                viewGuiController.showScoreBonus("+" + bonus);
+            }
         }
     }
 
@@ -172,9 +204,25 @@ public class GameController implements InputEventListener {
 
         if (gameOver) {
             viewGuiController.gameOver();
+            soundManager.playGameOver();
+            handleGameOver();
         }
 
         // active piece has changed (new or swapped), so return its view
         return board.getViewData();
+    }
+
+    // Helper method to handle game over logic centrally
+    private void handleGameOver() {
+        viewGuiController.gameOver();
+        soundManager.playGameOver();
+
+        // NEW: Check and Save High Score
+        int currentScore = board.getScore().scoreProperty().get();
+        if (scoreManager.isNewHighScore(currentScore)) {
+            scoreManager.saveHighScore(currentScore);
+            viewGuiController.showScoreBonus("NEW HIGH SCORE!");
+            viewGuiController.setHighScore(scoreManager.getHighScore());
+        }
     }
 }

@@ -25,22 +25,19 @@ public class NotificationPanel extends BorderPane {
         score.setEffect(glow);
         score.setTextFill(Color.WHITE);
         setCenter(score);
-
     }
 
     public void showScore(ObservableList<Node> list) {
         FadeTransition ft = new FadeTransition(Duration.millis(2000), this);
         TranslateTransition tt = new TranslateTransition(Duration.millis(2500), this);
-        tt.setToY(this.getLayoutY() - 40);
+
+        // FIX: Use setByY instead of setToY so it floats up relative to where we place it
+        tt.setByY(-40);
+
         ft.setFromValue(1);
         ft.setToValue(0);
         ParallelTransition transition = new ParallelTransition(tt, ft);
-        transition.setOnFinished(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                list.remove(NotificationPanel.this);
-            }
-        });
+        transition.setOnFinished(event -> list.remove(NotificationPanel.this));
         transition.play();
     }
 }
