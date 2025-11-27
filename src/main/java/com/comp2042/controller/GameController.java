@@ -4,6 +4,7 @@ import com.comp2042.controller.event.EventSource;
 import com.comp2042.controller.event.MoveEvent;
 import com.comp2042.model.*;
 import com.comp2042.view.GuiController;
+import com.comp2042.view.SoundManager;
 
 /**
  * GameController acts as the "C" in MVC.
@@ -15,6 +16,7 @@ public class GameController implements InputEventListener {
     private Board board = new TetrisBoard(TetrisBoard.BOARD_HEIGHT, TetrisBoard.BOARD_WIDTH);
 
     private final GuiController viewGuiController;
+    private final SoundManager soundManager;
 
     public GameController(GuiController c) {
         viewGuiController = c;
@@ -28,6 +30,8 @@ public class GameController implements InputEventListener {
         if (board instanceof TetrisBoard) {
             viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
         }
+
+        this.soundManager = new SoundManager();
     }
 
     /**
@@ -51,6 +55,7 @@ public class GameController implements InputEventListener {
 
         if (downData.isGameOver()) {
             viewGuiController.gameOver();
+            soundManager.playGameOver();
         }
         handleClearRow(downData);
         return downData;
@@ -69,6 +74,7 @@ public class GameController implements InputEventListener {
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
         if (downData.isGameOver()) {
             viewGuiController.gameOver();
+            soundManager.playGameOver();
         }
         handleClearRow(downData);
         return downData;
@@ -159,11 +165,19 @@ public class GameController implements InputEventListener {
             int bonus = ScoringRules.lineClearBonus(linesRemoved);
             board.getScore().addScore(bonus);
 
-            // 2. Update Lines and Level
+            // Check level BEFORE adding lines to see if we level up
+            int oldLevel = board.getScore().levelProperty().get();
             board.getScore().addLines(linesRemoved);
+            int newLevel = board.getScore().levelProperty().get();
 
-            // 3. Show Animation
-            viewGuiController.showScoreBonus("+" + bonus);
+            // 3. Audio & Visuals
+            if (newLevel > oldLevel) {
+                soundManager.playLevelUp();
+                viewGuiController.showScoreBonus("LEVEL " + newLevel);
+            } else {
+                soundManager.playClearLine();
+                viewGuiController.showScoreBonus("+" + bonus);
+            }
         }
     }
 
@@ -179,6 +193,7 @@ public class GameController implements InputEventListener {
 
         if (gameOver) {
             viewGuiController.gameOver();
+            soundManager.playGameOver();
         }
 
         // active piece has changed (new or swapped), so return its view
