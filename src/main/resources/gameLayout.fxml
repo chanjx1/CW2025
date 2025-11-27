@@ -20,6 +20,7 @@
             <Label text="HOLD" styleClass="holdBrickLabel"/>
             <Pane fx:id="holdPane"
                   prefWidth="80" prefHeight="80"
+                  maxWidth="80" maxHeight="80"
                   styleClass="nextBrick"/>
         </VBox>
 
@@ -34,18 +35,30 @@
         </StackPane>
 
         <!-- RIGHT: score panel -->
-        <VBox alignment="TOP_CENTER" spacing="8">
-            <Label text="SCORE" styleClass="nextBrickLabel"/>
-            <StackPane styleClass="ipad-dark-grey">
-                <Label fx:id="scoreLabel"
-                       text="Score: 0"
-                       styleClass="scoreClass" />
-            </StackPane>
+        <VBox alignment="TOP_CENTER" spacing="20">
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="NEXT" styleClass="nextBrickLabel"/>
+                <Pane fx:id="nextBrickPane"
+                      prefWidth="80" prefHeight="80"
+                      maxWidth="80" maxHeight="80"
+                      styleClass="nextBrick"/>
+            </VBox>
 
-            <Label text="BEST" styleClass="nextBrickLabel"/>
-            <StackPane styleClass="ipad-dark-grey">
-                <Label fx:id="highScoreLabel" text="0" styleClass="scoreClass" />
-            </StackPane>
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="SCORE" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="scoreLabel"
+                           text="Score: 0"
+                           styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
+
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="BEST" styleClass="nextBrickLabel"/>
+                <StackPane styleClass="ipad-dark-grey">
+                    <Label fx:id="highScoreLabel" text="0" styleClass="scoreClass" />
+                </StackPane>
+            </VBox>
         </VBox>
     </HBox>
 

@@ -43,6 +43,7 @@ public class GuiController implements Initializable {
     @FXML private GameOverPanel gameOverPanel;
     @FXML private Label scoreLabel;
     @FXML private Pane holdPane;
+    @FXML private Pane nextBrickPane;
     @FXML private Label highScoreLabel;
 
     private Timeline timeLine;
@@ -66,7 +67,7 @@ public class GuiController implements Initializable {
         reflection.setTopOffset(-12);
 
         // Initialize the renderer
-        this.boardRenderer = new BoardRenderer(gamePanel, brickOverlay, holdPane);
+        this.boardRenderer = new BoardRenderer(gamePanel, brickOverlay, holdPane, nextBrickPane);
     }
 
     private void handleKeyPressed(KeyEvent keyEvent) {
@@ -131,6 +132,7 @@ public class GuiController implements Initializable {
     private void refreshBrick(ViewData brick) {
         if (gameState.get() == GameState.RUNNING) {
             boardRenderer.updateBrickPosition(brick);
+            boardRenderer.showNextPiece(brick.getNextBrickData());
         }
     }
 
@@ -162,7 +164,7 @@ public class GuiController implements Initializable {
     public void bindGameStats(IntegerProperty scoreProp, IntegerProperty levelProp) {
         // Bind Score Label
         if (scoreLabel != null) {
-            scoreLabel.textProperty().bind(scoreProp.asString("Score: %d"));
+            scoreLabel.textProperty().bind(scoreProp.asString("Score: %04d"));
         }
 
         // Listen for Level changes to adjust speed

@@ -15,20 +15,23 @@ public class BoardRenderer {
     private final GridPane gamePanel;
     private final Pane brickOverlay;
     private final Pane holdPane;
+    private final Pane nextBrickPane;
     private final BrickStyler brickStyler;
 
     private Rectangle[][] displayMatrix;
     private Rectangle[][] activeBrick;
     private Rectangle[][] ghostBrick;
     private Rectangle[][] holdCells;
+    private Rectangle[][] nextCells;
 
     // We need this to calculate the Ghost Piece position
     private InputEventListener eventListener;
 
-    public BoardRenderer(GridPane gamePanel, Pane brickOverlay, Pane holdPane) {
+    public BoardRenderer(GridPane gamePanel, Pane brickOverlay, Pane holdPane, Pane nextBrickPane) {
         this.gamePanel = gamePanel;
         this.brickOverlay = brickOverlay;
         this.holdPane = holdPane;
+        this.nextBrickPane = nextBrickPane;
         this.brickStyler = new BrickStyler();
     }
 
@@ -80,6 +83,89 @@ public class BoardRenderer {
 
         // 4. Init Hold Pane
         initHoldPane();
+
+        // 5. Init Next Pane (NEW)
+        initNextBrickPane();
+    }
+
+    // NEW Method: Copy logic from initHoldPane but use nextBrickPane/nextCells
+    private void initNextBrickPane() {
+        final int ROWS = 4;
+        final int COLS = 4;
+        nextCells = new Rectangle[ROWS][COLS];
+
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                Rectangle r = new Rectangle(BRICK_SIZE - 1, BRICK_SIZE - 1);
+                r.setFill(Color.TRANSPARENT);
+                r.setArcWidth(9);
+                r.setArcHeight(9);
+                r.setStrokeWidth(1.0);
+                r.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
+                r.setX(j * BRICK_SIZE);
+                r.setY(i * BRICK_SIZE);
+                nextCells[i][j] = r;
+                nextBrickPane.getChildren().add(r);
+            }
+        }
+    }
+    public void showNextPiece(int[][] shape) {
+        if (nextCells == null || shape == null) return;
+        renderCentered(nextCells, shape, nextBrickPane.getPrefWidth(), nextBrickPane.getPrefHeight());
+    }
+
+    public void showHoldPiece(int[][] shape) {
+        if (holdCells == null || shape == null) return;
+        renderCentered(holdCells, shape, holdPane.getPrefWidth(), holdPane.getPrefHeight());
+    }
+
+    /**
+     * Generic helper to render a shape perfectly centered in a pane using pixel coordinates.
+     */
+    private void renderCentered(Rectangle[][] targetGrid, int[][] shape, double paneWidth, double paneHeight) {
+        // 1. Clear all cells first
+        for (Rectangle[] row : targetGrid) {
+            for (Rectangle r : row) r.setVisible(false);
+        }
+
+        // 2. Calculate the bounding box of the shape
+        int[] box = getBoundingBox(shape);
+        int top = box[0], bottom = box[1], left = box[2], right = box[3];
+
+        // 3. Calculate actual dimensions in blocks
+        int contentWidthInBlocks = right - left + 1;
+        int contentHeightInBlocks = bottom - top + 1;
+
+        // 4. Calculate dimensions in pixels
+        double contentWidthPx = contentWidthInBlocks * BRICK_SIZE;
+        double contentHeightPx = contentHeightInBlocks * BRICK_SIZE;
+
+        // 5. Calculate the starting pixel coordinates to center the shape
+        double startX = (paneWidth - contentWidthPx) / 2;
+        double startY = (paneHeight - contentHeightPx) / 2;
+
+        // 6. Draw the blocks
+        for (int i = top; i <= bottom; i++) {
+            for (int j = left; j <= right; j++) {
+                if (shape[i][j] != 0) {
+                    // We map the shape's loop indices (i, j) to the targetGrid flat pool
+                    // We just need *any* rectangle from the pool, so we map loosely
+                    int poolRow = i - top;
+                    int poolCol = j - left;
+
+                    if (poolRow < targetGrid.length && poolCol < targetGrid[0].length) {
+                        Rectangle r = targetGrid[poolRow][poolCol];
+
+                        r.setVisible(true);
+                        brickStyler.style(r, shape[i][j]);
+
+                        // KEY FIX: Set X/Y manually based on calculated center
+                        r.setX(startX + (poolCol * BRICK_SIZE));
+                        r.setY(startY + (poolRow * BRICK_SIZE));
+                    }
+                }
+            }
+        }
     }
 
     private void initHoldPane() {
@@ -148,42 +234,6 @@ public class BoardRenderer {
         for (int i = TetrisBoard.HIDDEN_ROWS; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 brickStyler.style(displayMatrix[i][j], board[i][j]);
-            }
-        }
-    }
-
-    public void showHoldPiece(int[][] shape) {
-        if (holdCells == null) return;
-        for (Rectangle[] row : holdCells) {
-            for (Rectangle r : row) {
-                r.setVisible(false);
-            }
-        }
-        if (shape == null) return;
-
-        int[] box = getBoundingBox(shape);
-        int top = box[0], bottom = box[1], left = box[2], right = box[3];
-        int realHeight = bottom - top + 1;
-        int realWidth  = right - left + 1;
-        int rows = holdCells.length;
-        int cols = holdCells[0].length;
-        int offsetY = (rows - realHeight) / 2;
-        int offsetX;
-        if (realWidth == 4) offsetX = 0;
-        else if (realWidth == 2) offsetX = 1;
-        else if (realWidth == 3) offsetX = 1;
-        else offsetX = Math.max(0, (cols - realWidth) / 2);
-
-        for (int i = top; i <= bottom; i++) {
-            for (int j = left; j <= right; j++) {
-                if (shape[i][j] == 0) continue;
-                int yy = offsetY + (i - top);
-                int xx = offsetX + (j - left);
-                if (yy >= 0 && yy < rows && xx >= 0 && xx < cols) {
-                    Rectangle cell = holdCells[yy][xx];
-                    cell.setVisible(true);
-                    brickStyler.style(cell, shape[i][j]);
-                }
             }
         }
     }
