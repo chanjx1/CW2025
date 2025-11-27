@@ -39,8 +39,35 @@ public class BoardRenderer {
         this.eventListener = eventListener;
     }
 
+    /**
+     * Helper method to initialize a grid of rectangles in a given Pane.
+     */
+    private Rectangle[][] createGrid(Pane pane, int rows, int cols) {
+        Rectangle[][] grid = new Rectangle[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Rectangle r = new Rectangle(BRICK_SIZE - 1, BRICK_SIZE - 1);
+                r.setFill(Color.TRANSPARENT);
+                r.setArcWidth(9);
+                r.setArcHeight(9);
+                r.setStrokeWidth(1.0);
+                r.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
+                r.setX(j * BRICK_SIZE);
+                r.setY(i * BRICK_SIZE);
+
+                grid[i][j] = r;
+                pane.getChildren().add(r);
+            }
+        }
+        return grid;
+    }
+
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         // 1. Init Background Grid
+        // Note: Main board uses specific spacing/adding logic, so we might keep the main loop or refactor it carefully.
+        // The main board usually adds to a GridPane (gamePanel.add), while the others add to Pane (pane.getChildren.add).
+        // So we will leave the MAIN board loop alone, but refactor the Hold/Next/Ghost ones.
+
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
         for (int i = TetrisBoard.HIDDEN_ROWS; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
@@ -51,64 +78,34 @@ public class BoardRenderer {
             }
         }
 
-        // 2. Init Ghost Brick
-        ghostBrick = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                int blockSize = BRICK_SIZE - 1;
-                Rectangle rectangle = new Rectangle(blockSize, blockSize);
-                rectangle.setFill(Color.TRANSPARENT);
-                rectangle.setStroke(Color.WHITE);
-                rectangle.setOpacity(0.35);
-                rectangle.setArcWidth(9);
-                rectangle.setArcHeight(9);
-                rectangle.setStrokeWidth(1.0);
-                rectangle.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
-                ghostBrick[i][j] = rectangle;
-                brickOverlay.getChildren().add(rectangle);
+        // 2. Init Ghost Brick (Pane based)
+        this.ghostBrick = createGrid(brickOverlay, brick.getBrickData().length, brick.getBrickData()[0].length);
+        // Ghost needs specific styling differences (Stroke), so apply them after creation:
+        for (Rectangle[] row : ghostBrick) {
+            for (Rectangle r : row) {
+                r.setStroke(Color.WHITE);
+                r.setOpacity(0.35);
             }
         }
 
-        // 3. Init Active Brick
-        activeBrick = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                int blockSize = BRICK_SIZE - 1;
-                Rectangle rectangle = new Rectangle(blockSize, blockSize);
-                brickStyler.style(rectangle, brick.getBrickData()[i][j]);
-                activeBrick[i][j] = rectangle;
-                brickOverlay.getChildren().add(rectangle);
+        // 3. Init Active Brick (Pane based)
+        this.activeBrick = createGrid(brickOverlay, brick.getBrickData().length, brick.getBrickData()[0].length);
+        // Active brick needs initial color styling
+        for (int i = 0; i < activeBrick.length; i++) {
+            for (int j = 0; j < activeBrick[i].length; j++) {
+                brickStyler.style(activeBrick[i][j], brick.getBrickData()[i][j]);
             }
         }
 
         // 4. Init Hold Pane
-        initHoldPane();
+        this.holdCells = createGrid(holdPane, 4, 4);
 
-        // 5. Init Next Pane (NEW)
-        initNextBrickPane();
+        // 5. Init Next Panes
+        this.nextCells = createGrid(nextBrickPane, 4, 4);
+        // If you still have nextBrickPane2
+        // this.nextCells2 = createGrid(nextBrickPane2, 4, 4);
     }
 
-    // NEW Method: Copy logic from initHoldPane but use nextBrickPane/nextCells
-    private void initNextBrickPane() {
-        final int ROWS = 4;
-        final int COLS = 4;
-        nextCells = new Rectangle[ROWS][COLS];
-
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS; j++) {
-                Rectangle r = new Rectangle(BRICK_SIZE - 1, BRICK_SIZE - 1);
-                r.setFill(Color.TRANSPARENT);
-                r.setArcWidth(9);
-                r.setArcHeight(9);
-                r.setStrokeWidth(1.0);
-                r.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
-                r.setX(j * BRICK_SIZE);
-                r.setY(i * BRICK_SIZE);
-                nextCells[i][j] = r;
-                nextBrickPane.getChildren().add(r);
-            }
-        }
-    }
     public void showNextPiece(int[][] shape) {
         if (nextCells == null || shape == null) return;
         renderCentered(nextCells, shape, nextBrickPane.getPrefWidth(), nextBrickPane.getPrefHeight());
@@ -164,27 +161,6 @@ public class BoardRenderer {
                         r.setY(startY + (poolRow * BRICK_SIZE));
                     }
                 }
-            }
-        }
-    }
-
-    private void initHoldPane() {
-        final int HOLD_ROWS = 4;
-        final int HOLD_COLS = 4;
-        holdCells = new Rectangle[HOLD_ROWS][HOLD_COLS];
-
-        for (int i = 0; i < HOLD_ROWS; i++) {
-            for (int j = 0; j < HOLD_COLS; j++) {
-                Rectangle r = new Rectangle(BRICK_SIZE - 1, BRICK_SIZE - 1);
-                r.setFill(Color.TRANSPARENT);
-                r.setArcWidth(9);
-                r.setArcHeight(9);
-                r.setStrokeWidth(1.0);
-                r.setStrokeType(javafx.scene.shape.StrokeType.CENTERED);
-                r.setX(j * BRICK_SIZE);
-                r.setY(i * BRICK_SIZE);
-                holdCells[i][j] = r;
-                holdPane.getChildren().add(r);
             }
         }
     }

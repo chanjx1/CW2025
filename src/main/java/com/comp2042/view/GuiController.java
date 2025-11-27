@@ -23,7 +23,6 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.fxml.FXMLLoader;
@@ -39,10 +38,6 @@ import java.util.ResourceBundle;
  * Refactored to delegate rendering to BoardRenderer and styling to BrickStyler.
  */
 public class GuiController implements Initializable {
-
-    private enum GameState {
-        RUNNING, PAUSED, GAME_OVER
-    }
 
     @FXML private GridPane gamePanel;
     @FXML private Pane brickOverlay;
@@ -60,7 +55,6 @@ public class GuiController implements Initializable {
     private Timeline timeLine;
     private InputEventListener eventListener;
 
-    // REFACTOR: New helper class for rendering
     private BoardRenderer boardRenderer;
 
     private final ObjectProperty<GameState> gameState = new SimpleObjectProperty<>(GameState.RUNNING);
@@ -77,7 +71,6 @@ public class GuiController implements Initializable {
         reflection.setTopOpacity(0.9);
         reflection.setTopOffset(-12);
 
-        // Initialize the renderer
         this.boardRenderer = new BoardRenderer(gamePanel, brickOverlay, holdPane, nextBrickPane);
     }
 
@@ -173,7 +166,6 @@ public class GuiController implements Initializable {
     }
 
     public void bindGameStats(IntegerProperty scoreProp, IntegerProperty levelProp, IntegerProperty linesProp) {
-        // Bind Score Label
         if (scoreLabel != null) {
             scoreLabel.textProperty().bind(scoreProp.asString("Score: %05d"));
         }
@@ -186,10 +178,8 @@ public class GuiController implements Initializable {
             linesLabel.textProperty().bind(linesProp.asString("%d"));
         }
 
-        // Listen for Level changes to adjust speed
         levelProp.addListener((obs, oldVal, newVal) -> {
             int level = newVal.intValue();
-            // Speed formula: Base 400ms, decreases by 50ms per level, capped at 100ms
             double delay = Math.max(100, 400 - ((level - 1) * 50));
 
             timeLine.stop();
@@ -199,7 +189,6 @@ public class GuiController implements Initializable {
             ));
             timeLine.play();
 
-            // Optional: Show a "LEVEL UP" notification
             showScoreBonus("LEVEL " + level);
         });
     }
@@ -236,9 +225,6 @@ public class GuiController implements Initializable {
 
     public void showScoreBonus(String text) {
         NotificationPanel notificationPanel = new NotificationPanel(text);
-
-        // FIX: Offset Y position if other notifications are already active
-        // Each existing notification pushes the new one down by 25 pixels
         int activeNotifications = groupNotification.getChildren().size();
         double yOffset = activeNotifications * 25;
 
@@ -260,15 +246,13 @@ public class GuiController implements Initializable {
 
     public void togglePauseMenu() {
         if (pauseMenu.isVisible()) {
-            // Hide menu -> Resume game
             pauseMenu.setVisible(false);
             if (gameState.get() == GameState.PAUSED) {
                 timeLine.play();
                 gameState.set(GameState.RUNNING);
             }
-            gamePanel.requestFocus(); // Return focus to the board
+            gamePanel.requestFocus();
         } else {
-            // Show menu -> Pause game
             pauseMenu.setVisible(true);
             if (gameState.get() == GameState.RUNNING) {
                 timeLine.stop();
@@ -282,8 +266,7 @@ public class GuiController implements Initializable {
     }
 
     public void onExitToMenu(ActionEvent event) throws IOException {
-        timeLine.stop(); // Ensure game loop is dead
-
+        timeLine.stop();
         URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
         Parent root = FXMLLoader.load(location);
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
