@@ -22,6 +22,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
+import javafx.stage.Stage;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import java.io.IOException;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -45,6 +53,7 @@ public class GuiController implements Initializable {
     @FXML private Pane holdPane;
     @FXML private Pane nextBrickPane;
     @FXML private Label highScoreLabel;
+    @FXML private VBox pauseMenu;
 
     private Timeline timeLine;
     private InputEventListener eventListener;
@@ -73,14 +82,14 @@ public class GuiController implements Initializable {
     private void handleKeyPressed(KeyEvent keyEvent) {
         KeyCode code = keyEvent.getCode();
 
-        if (code == KeyCode.N) {
-            newGame(null);
+        if (code == KeyCode.ESCAPE || code == KeyCode.P) {
+            togglePauseMenu();
             keyEvent.consume();
             return;
         }
 
-        if (code == KeyCode.P) {
-            pauseGame(null);
+        if (code == KeyCode.N) {
+            newGame(null);
             keyEvent.consume();
             return;
         }
@@ -237,5 +246,39 @@ public class GuiController implements Initializable {
         if (highScoreLabel != null) {
             highScoreLabel.setText(String.valueOf(score));
         }
+    }
+
+    public void togglePauseMenu() {
+        if (pauseMenu.isVisible()) {
+            // Hide menu -> Resume game
+            pauseMenu.setVisible(false);
+            if (gameState.get() == GameState.PAUSED) {
+                timeLine.play();
+                gameState.set(GameState.RUNNING);
+            }
+            gamePanel.requestFocus(); // Return focus to the board
+        } else {
+            // Show menu -> Pause game
+            pauseMenu.setVisible(true);
+            if (gameState.get() == GameState.RUNNING) {
+                timeLine.stop();
+                gameState.set(GameState.PAUSED);
+            }
+        }
+    }
+
+    public void onResume(ActionEvent event) {
+        togglePauseMenu();
+    }
+
+    public void onExitToMenu(ActionEvent event) throws IOException {
+        timeLine.stop(); // Ensure game loop is dead
+
+        URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
+        Parent root = FXMLLoader.load(location);
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root, 800, 600);
+        stage.setScene(scene);
+        stage.show();
     }
 }

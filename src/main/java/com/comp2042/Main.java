@@ -15,12 +15,14 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // CHANGE: Load mainMenu.fxml instead of gameLayout.fxml
+        URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
 
-        URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
-        ResourceBundle resources = null;
-        FXMLLoader fxmlLoader = new FXMLLoader(location, resources);
+        FXMLLoader fxmlLoader = new FXMLLoader(location);
         Parent root = fxmlLoader.load();
-        GuiController c = fxmlLoader.getController();
+
+        // NOTE: We do NOT create GameController here anymore.
+        // MenuController will do that when "New Game" is clicked.
 
         primaryStage.setTitle("TetrisJFX");
         Scene scene = new Scene(root, 800, 600);
@@ -28,7 +30,6 @@ public class Main extends Application {
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
         primaryStage.show();
-        new GameController(c);
     }
 
 
