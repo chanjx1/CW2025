@@ -47,7 +47,7 @@
                    maxWidth="150" maxHeight="400"
                    prefWidth="150" prefHeight="400"
                    styleClass="gameBoard">
-            <GridPane fx:id="gamePanel" hgap="0" vgap="1" />
+            <GridPane fx:id="gamePanel" hgap="0" vgap="0" />
             <Pane fx:id="brickOverlay" pickOnBounds="false" />
         </StackPane>
 

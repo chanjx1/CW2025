@@ -7,9 +7,14 @@ import com.comp2042.view.GuiController;
 import com.comp2042.view.SoundManager;
 
 /**
- * GameController acts as the "C" in MVC.
- * It owns the game rules, talks to the Board model, and instructs the GUI what to display.
- * Input events come from GuiController via the InputEventListener interface.
+ * The central controller in the MVC architecture.
+ * <p>
+ * This class orchestrates the game loop by:
+ * <ul>
+ * <li>Handling input events from the View (via {@link InputEventListener}).</li>
+ * <li>Updating the Model ({@link Board}).</li>
+ * <li>Managing high-level game rules like Scoring, Leveling, and Audio triggers.</li>
+ * </ul>
  */
 public class GameController implements InputEventListener {
 
@@ -37,11 +42,14 @@ public class GameController implements InputEventListener {
     }
 
     /**
-     * Handles a single "tick" of the brick moving down.
-     * - Moves the current brick down if possible
-     * - Merges it into the background when it can no longer move
-     * - Clears full rows and updates the score
-     * - Creates a new brick, or triggers game over if the board is blocked
+     * Handles the "Tick" event (gravity) or user soft-drop input.
+     * <p>
+     * Moves the piece down, updates the view, and checks for game-over conditions.
+     * It also awards points for manual soft-drops.
+     * </p>
+     *
+     * @param event The move event triggering this action.
+     * @return The result of the downward movement (clear rows, game over status).
      */
     @Override
     public DownData onDownEvent(MoveEvent event) {
@@ -108,6 +116,10 @@ public class GameController implements InputEventListener {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
         viewGuiController.setHighScore(scoreManager.getHighScore());
+
+        if (board instanceof TetrisBoard) {
+            viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
+        }
     }
 
     /**
@@ -158,7 +170,13 @@ public class GameController implements InputEventListener {
     }
 
     /**
-     * Applies visual feedback and updates score/level for cleared rows.
+     * Processes scoring and leveling logic when rows are cleared.
+     * <p>
+     * Calculates the score bonus based on the current level using {@link ScoringRules},
+     * updates the {@link Score} model, and triggers visual/audio feedback.
+     * </p>
+     *
+     * @param downData The data returned from the board after a drop operation.
      */
     private void handleClearRow(DownData downData) {
         if (downData.getClearRow() != null
