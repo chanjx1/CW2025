@@ -128,7 +128,16 @@ public class BoardRenderer {
     }
 
     public void showHoldPiece(int[][] shape) {
-        if (holdCells == null || shape == null) return;
+        if (holdCells == null) return;
+
+        // FIX: If shape is null, clear the grid and return
+        if (shape == null) {
+            for (Rectangle[] row : holdCells) {
+                for (Rectangle r : row) r.setVisible(false);
+            }
+            return;
+        }
+
         renderCentered(holdCells, shape, holdPane.getPrefWidth(), holdPane.getPrefHeight());
     }
 

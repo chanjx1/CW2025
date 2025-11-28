@@ -116,6 +116,10 @@ public class GameController implements InputEventListener {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
         viewGuiController.setHighScore(scoreManager.getHighScore());
+
+        if (board instanceof TetrisBoard) {
+            viewGuiController.showHoldPiece(((TetrisBoard) board).getHoldBrickShape());
+        }
     }
 
     /**
