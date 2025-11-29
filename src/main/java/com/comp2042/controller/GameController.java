@@ -18,12 +18,23 @@ import com.comp2042.view.SoundManager;
  */
 public class GameController implements InputEventListener {
 
+    /** The main game board model containing the grid and physics logic. */
     private Board board = new TetrisBoard(TetrisBoard.BOARD_HEIGHT, TetrisBoard.BOARD_WIDTH);
 
+    /** The view controller responsible for rendering the game state. */
     private final GuiController viewGuiController;
+
+    /** Facade for managing and playing audio effects. */
     private final SoundManager soundManager;
+
+    /** Manager for handling high score persistence (saving/loading). */
     private final ScoreManager scoreManager;
 
+    /**
+     * Initializes the game controller, sets up dependencies, and binds the view to the model.
+     *
+     * @param c The GUI controller instance used to interact with the JavaFX view.
+     */
     public GameController(GuiController c) {
         viewGuiController = c;
         this.soundManager = new SoundManager();
@@ -33,7 +44,6 @@ public class GameController implements InputEventListener {
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.setHighScore(scoreManager.getHighScore());
 
-        // NEW: Bind Score AND Level
         viewGuiController.bindGameStats(board.getScore().scoreProperty(), board.getScore().levelProperty(), board.getScore().linesProperty());
 
         if (board instanceof TetrisBoard) {
@@ -72,12 +82,19 @@ public class GameController implements InputEventListener {
         return downData;
     }
 
-    // For hard drop, we can just give a fixed bonus for simplicity
+    /**
+     * Handles the hard-drop event (instantly dropping the piece to the bottom).
+     * <p>
+     * Awards a fixed score bonus for hard dropping and immediately locks the piece.
+     * </p>
+     *
+     * @param event The move event triggering this action.
+     * @return The result of the drop (clear rows, game over status).
+     */
     public DownData onHardDropEvent(MoveEvent event) {
         boolean fromUser = event.getEventSource() == EventSource.USER;
         DownData downData = board.hardDrop(fromUser);
 
-        // Fixed bonus for hard drop (since we don't calculate exact rows anymore)
         if (fromUser) {
             board.getScore().addScore(20);
         }
@@ -92,25 +109,49 @@ public class GameController implements InputEventListener {
         return downData;
     }
 
+    /**
+     * Handles the "Move Left" event.
+     *
+     * @param event The input event.
+     * @return The updated view data after attempting the move.
+     */
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
         board.moveBrickLeft();
         return board.getViewData();
     }
 
+    /**
+     * Handles the "Move Right" event.
+     *
+     * @param event The input event.
+     * @return The updated view data after attempting the move.
+     */
     @Override
     public ViewData onRightEvent(MoveEvent event) {
         board.moveBrickRight();
         return board.getViewData();
     }
 
+    /**
+     * Handles the "Rotate" event.
+     *
+     * @param event The input event.
+     * @return The updated view data after attempting the rotation.
+     */
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
         board.rotateLeftBrick();
         return board.getViewData();
     }
 
-
+    /**
+     * Starts a new game session.
+     * <p>
+     * Resets the board, score, and view, and spawns the first brick.
+     * Also updates the high score display.
+     * </p>
+     */
     @Override
     public void createNewGame() {
         board.newGame();
@@ -123,10 +164,14 @@ public class GameController implements InputEventListener {
     }
 
     /**
-     * Helper used by the GUI to compute the ghost landing position.
-     * It checks whether placing the current brick with its top row at
-     * newY (in BOARD coordinates) would collide with the board edges
-     * or any existing blocks in the background matrix.
+     * Checks if the active brick can move to the specified Y-coordinate.
+     * <p>
+     * Used mainly for calculating the "Ghost Piece" position.
+     * </p>
+     *
+     * @param brick The current view data of the brick.
+     * @param newY The target Y-coordinate on the board.
+     * @return true if the move is valid (no collision), false otherwise.
      */
     @Override
     public boolean canMoveDown(ViewData brick, int newY) {
@@ -207,6 +252,12 @@ public class GameController implements InputEventListener {
         }
     }
 
+    /**
+     * Handles the "Hold Piece" event (swapping active with held).
+     *
+     * @param event The input event.
+     * @return The updated view data (the new active piece).
+     */
     @Override
     public ViewData onHoldEvent(MoveEvent event) {
         TetrisBoard tBoard = (TetrisBoard) board;
@@ -227,12 +278,17 @@ public class GameController implements InputEventListener {
         return board.getViewData();
     }
 
-    // Helper method to handle game over logic centrally
+    /**
+     * Helper method to centralize game-over logic.
+     * <p>
+     * Stops the game loop, plays the game over sound, and checks if a new high score was achieved.
+     * </p>
+     */
     private void handleGameOver() {
         viewGuiController.gameOver();
         soundManager.playGameOver();
 
-        // NEW: Check and Save High Score
+        // Check and Save High Score
         int currentScore = board.getScore().scoreProperty().get();
         if (scoreManager.isNewHighScore(currentScore)) {
             scoreManager.saveHighScore(currentScore);
