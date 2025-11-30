@@ -24,6 +24,15 @@ import java.net.URL;
 public class MenuController {
 
     /**
+     * Default constructor.
+     * <p>
+     * Called by the FXMLLoader when the menu view is loaded.
+     * </p>
+     */
+    public MenuController() {
+    }
+
+    /**
      * Starts a new game session.
      * <p>
      * Loads the {@code gameLayout.fxml}, initializes the {@link GameController} to bind the logic,

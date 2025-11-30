@@ -18,6 +18,12 @@ public class BrickRotator {
     private int currentShape = 0;
 
     /**
+     * Default constructor.
+     */
+    public BrickRotator() {
+    }
+
+    /**
      * Calculates the next rotation state for the current brick.
      * <p>
      * This method simulates a rotation to check for collisions before actually

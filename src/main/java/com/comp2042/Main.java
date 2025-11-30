@@ -19,6 +19,12 @@ import java.net.URL;
 public class Main extends Application {
 
     /**
+     * Default constructor.
+     */
+    public Main() {
+    }
+
+    /**
      * Starts the JavaFX application.
      * <p>
      * This method is called after the system is ready for the application to begin running.

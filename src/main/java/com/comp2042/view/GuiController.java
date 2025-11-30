@@ -91,6 +91,15 @@ public class GuiController implements Initializable {
     private final ObjectProperty<GameState> gameState = new SimpleObjectProperty<>(GameState.RUNNING);
 
     /**
+     * Default constructor.
+     * <p>
+     * Called by the FXMLLoader when the view is loaded.
+     * </p>
+     */
+    public GuiController() {
+    }
+
+    /**
      * Initializes the controller class.
      * <p>
      * Sets up the focus, key listeners, visual effects, and initializes the BoardRenderer.

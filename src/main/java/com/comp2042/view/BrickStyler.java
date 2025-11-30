@@ -21,6 +21,12 @@ public class BrickStyler {
     private static final double STROKE_WIDTH = 1.2;
 
     /**
+     * Default constructor.
+     */
+    public BrickStyler() {
+    }
+
+    /**
      * Applies visual styling to a given rectangle based on the brick type.
      * <p>
      * Sets the fill color, rounded corners, and stroke width.

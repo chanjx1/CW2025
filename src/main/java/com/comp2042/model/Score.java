@@ -6,9 +6,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 /**
  * Represents the dynamic score state of the current game session.
  * <p>
- * This class uses JavaFX Properties ({@link IntegerProperty}) to store the score,
- * lines cleared, and current level. This allows the View to bind directly to these
- * values and update automatically when they change.
+ * This class uses JavaFX Properties to store the score, lines cleared, and current level.
  * </p>
  */
 public final class Score {
@@ -23,28 +21,20 @@ public final class Score {
     private final IntegerProperty level = new SimpleIntegerProperty(1);
 
     /**
-     * Retrieves the observable score property.
-     *
-     * @return The IntegerProperty for the score.
+     * Creates a new Score instance with default values.
      */
+    public Score() {
+        // Default constructor
+    }
+
     public IntegerProperty scoreProperty() {
         return score;
     }
 
-    /**
-     * Retrieves the observable lines cleared property.
-     *
-     * @return The IntegerProperty for the line count.
-     */
     public IntegerProperty linesProperty() {
         return lines;
     }
 
-    /**
-     * Retrieves the observable level property.
-     *
-     * @return The IntegerProperty for the current level.
-     */
     public IntegerProperty levelProperty() {
         return level;
     }
