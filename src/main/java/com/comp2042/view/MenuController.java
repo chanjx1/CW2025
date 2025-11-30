@@ -14,8 +14,25 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * Controller for the Main Menu scene.
+ * <p>
+ * This class handles user interactions on the start screen, including navigation to the
+ * game scene, displaying high scores, showing controls, and exiting the application.
+ * </p>
+ */
 public class MenuController {
 
+    /**
+     * Starts a new game session.
+     * <p>
+     * Loads the {@code gameLayout.fxml}, initializes the {@link GameController} to bind the logic,
+     * and switches the current stage's scene to the game view.
+     * </p>
+     *
+     * @param event The button click event, used to retrieve the current Stage.
+     * @throws IOException If the game layout FXML resource cannot be loaded.
+     */
     @FXML
     public void onNewGame(ActionEvent event) throws IOException {
         // 1. Load the Game Layout
@@ -34,6 +51,15 @@ public class MenuController {
         stage.show();
     }
 
+    /**
+     * Displays the High Scores popup.
+     * <p>
+     * Retrieves the current record from {@link ScoreManager} and displays it
+     * in a JavaFX Information Alert.
+     * </p>
+     *
+     * @param event The button click event.
+     */
     @FXML
     public void onHighScores(ActionEvent event) {
         // Simple popup to show the high score
@@ -47,6 +73,14 @@ public class MenuController {
         alert.showAndWait();
     }
 
+    /**
+     * Displays the Controls help popup.
+     * <p>
+     * Shows a dialog listing the keyboard bindings for movement, actions, and system commands.
+     * </p>
+     *
+     * @param event The button click event.
+     */
     @FXML
     public void onControls(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -73,6 +107,14 @@ public class MenuController {
         alert.showAndWait();
     }
 
+    /**
+     * Terminates the application.
+     * <p>
+     * Exits the Java Virtual Machine.
+     * </p>
+     *
+     * @param event The button click event.
+     */
     @FXML
     public void onExit(ActionEvent event) {
         System.exit(0);

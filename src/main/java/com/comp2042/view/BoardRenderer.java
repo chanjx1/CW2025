@@ -17,23 +17,50 @@ import javafx.scene.shape.Rectangle;
  */
 public class BoardRenderer {
 
+    /** The size of each block (cell) in pixels. */
     private static final int BRICK_SIZE = 20;
 
+    /** The main JavaFX GridPane that holds the background (locked) blocks. */
     private final GridPane gamePanel;
+
+    /** The Pane overlaid on top of the board for the active and ghost bricks. */
     private final Pane brickOverlay;
+
+    /** The Pane used to display the "Hold Piece" preview. */
     private final Pane holdPane;
+
+    /** The Pane used to display the "Next Piece" preview. */
     private final Pane nextBrickPane;
+
+    /** Helper class for applying visual styles (colors, borders) to blocks. */
     private final BrickStyler brickStyler;
 
+    /** Grid of rectangles representing the static background board. */
     private Rectangle[][] displayMatrix;
+
+    /** Grid of rectangles representing the currently falling brick. */
     private Rectangle[][] activeBrick;
+
+    /** Grid of rectangles representing the ghost piece projection. */
     private Rectangle[][] ghostBrick;
+
+    /** Grid of rectangles for the Hold piece preview. */
     private Rectangle[][] holdCells;
+
+    /** Grid of rectangles for the Next piece preview. */
     private Rectangle[][] nextCells;
 
-    // We need this to calculate the Ghost Piece position
+    /** Reference to the input listener, used to query move validity for ghost piece calculation. */
     private InputEventListener eventListener;
 
+    /**
+     * Constructs a new BoardRenderer.
+     *
+     * @param gamePanel     The grid for the main board background.
+     * @param brickOverlay  The overlay pane for moving pieces.
+     * @param holdPane      The preview pane for the held piece.
+     * @param nextBrickPane The preview pane for the next piece.
+     */
     public BoardRenderer(GridPane gamePanel, Pane brickOverlay, Pane holdPane, Pane nextBrickPane) {
         this.gamePanel = gamePanel;
         this.brickOverlay = brickOverlay;
@@ -42,6 +69,11 @@ public class BoardRenderer {
         this.brickStyler = new BrickStyler();
     }
 
+    /**
+     * Sets the event listener to allow the renderer to query game logic.
+     *
+     * @param eventListener The listener interface.
+     */
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
     }
@@ -78,12 +110,18 @@ public class BoardRenderer {
         return grid;
     }
 
+    /**
+     * Initializes the visual components of the game view.
+     * <p>
+     * Creates the rectangle grids for the board, active brick, ghost piece, and previews.
+     * This should be called once when the game session starts.
+     * </p>
+     *
+     * @param boardMatrix The initial state of the board logic.
+     * @param brick       The initial view data for the active brick.
+     */
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         // 1. Init Background Grid
-        // Note: Main board uses specific spacing/adding logic, so we might keep the main loop or refactor it carefully.
-        // The main board usually adds to a GridPane (gamePanel.add), while the others add to Pane (pane.getChildren.add).
-        // So we will leave the MAIN board loop alone, but refactor the Hold/Next/Ghost ones.
-
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
         for (int i = TetrisBoard.HIDDEN_ROWS; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
@@ -118,19 +156,33 @@ public class BoardRenderer {
 
         // 5. Init Next Panes
         this.nextCells = createGrid(nextBrickPane, 4, 4);
-        // If you still have nextBrickPane2
-        // this.nextCells2 = createGrid(nextBrickPane2, 4, 4);
     }
 
+    /**
+     * Renders the Next Piece preview.
+     * <p>
+     * Clears the previous preview and draws the new shape centered in the "Next" pane.
+     * </p>
+     *
+     * @param shape The 2D array representing the next tetromino.
+     */
     public void showNextPiece(int[][] shape) {
         if (nextCells == null || shape == null) return;
         renderCentered(nextCells, shape, nextBrickPane.getPrefWidth(), nextBrickPane.getPrefHeight());
     }
 
+    /**
+     * Renders the Hold Piece preview.
+     * <p>
+     * Clears the previous preview and draws the held shape centered in the "Hold" pane.
+     * If the shape is null, the preview is cleared.
+     * </p>
+     *
+     * @param shape The 2D array representing the held tetromino.
+     */
     public void showHoldPiece(int[][] shape) {
         if (holdCells == null) return;
 
-        // FIX: If shape is null, clear the grid and return
         if (shape == null) {
             for (Rectangle[] row : holdCells) {
                 for (Rectangle r : row) r.setVisible(false);
@@ -179,8 +231,6 @@ public class BoardRenderer {
         for (int i = top; i <= bottom; i++) {
             for (int j = left; j <= right; j++) {
                 if (shape[i][j] != 0) {
-                    // We map the shape's loop indices (i, j) to the targetGrid flat pool
-                    // We just need *any* rectangle from the pool, so we map loosely
                     int poolRow = i - top;
                     int poolCol = j - left;
 
@@ -190,7 +240,6 @@ public class BoardRenderer {
                         r.setVisible(true);
                         brickStyler.style(r, shape[i][j]);
 
-                        // KEY FIX: Set X/Y manually based on calculated center
                         r.setX(startX + (poolCol * BRICK_SIZE));
                         r.setY(startY + (poolRow * BRICK_SIZE));
                     }
@@ -199,6 +248,14 @@ public class BoardRenderer {
         }
     }
 
+    /**
+     * Updates the visual position of the active falling brick.
+     * <p>
+     * Also updates the position of the Ghost Piece projection based on the current column.
+     * </p>
+     *
+     * @param brick The current view data of the active brick.
+     */
     public void updateBrickPosition(ViewData brick) {
         updateGhostPosition(brick);
 
@@ -212,6 +269,15 @@ public class BoardRenderer {
         }
     }
 
+    /**
+     * Updates the position of the Ghost Piece.
+     * <p>
+     * Calculates where the current brick would land if dropped instantly and
+     * positions the ghost rectangles accordingly.
+     * </p>
+     *
+     * @param brick The current view data of the active brick.
+     */
     private void updateGhostPosition(ViewData brick) {
         if (ghostBrick == null || eventListener == null) return;
 
@@ -232,6 +298,12 @@ public class BoardRenderer {
         }
     }
 
+    /**
+     * Calculates the Y-coordinate where the ghost piece should be drawn.
+     *
+     * @param brick The current brick.
+     * @return The Y-coordinate (in board units) of the landing position.
+     */
     private int calculateGhostY(ViewData brick) {
         int ghostY = brick.getyPosition();
         while (eventListener != null && eventListener.canMoveDown(brick, ghostY + 1)) {
@@ -240,6 +312,14 @@ public class BoardRenderer {
         return ghostY;
     }
 
+    /**
+     * Refreshes the background grid visuals based on the board model.
+     * <p>
+     * This should be called whenever the board state changes (e.g., after a lock or line clear).
+     * </p>
+     *
+     * @param board The 2D array representing the locked blocks.
+     */
     public void refreshGameBackground(int[][] board) {
         for (int i = TetrisBoard.HIDDEN_ROWS; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
@@ -248,6 +328,15 @@ public class BoardRenderer {
         }
     }
 
+    /**
+     * Calculates the bounding box of a shape matrix.
+     * <p>
+     * Used to determine the visible width and height of a tetromino for centering purposes.
+     * </p>
+     *
+     * @param shape The shape matrix.
+     * @return An array containing {top, bottom, left, right} indices.
+     */
     private int[] getBoundingBox(int[][] shape) {
         int top = shape.length, bottom = -1, left = shape[0].length, right = -1;
         for (int i = 0; i < shape.length; i++) {
